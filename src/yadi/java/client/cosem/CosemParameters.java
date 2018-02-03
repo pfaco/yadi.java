@@ -102,7 +102,7 @@ public class CosemParameters {
 	}
 	
 	Connection connection = new Connection();
-	AuthenticationType authenticationType = AuthenticationType.LLS;
+	AuthenticationType authenticationType = AuthenticationType.PUBLIC;
 	SecurityType securityType = SecurityType.NONE;
 	ReferenceType referenceType = ReferenceType.LOGICAL_NAME;
 	
@@ -227,7 +227,7 @@ public class CosemParameters {
 	}
 	
 	/**
-	 * Sets the servce class type
+	 * Sets the service class type
 	 * @param serviceClass
 	 */
 	public void setServiceClass(ServiceClassType serviceClass) {

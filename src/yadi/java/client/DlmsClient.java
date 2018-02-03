@@ -19,6 +19,7 @@ package yadi.java.client;
 
 import yadi.java.client.cosem.Cosem;
 import yadi.java.client.cosem.CosemParameters;
+import yadi.java.client.cosem.LnDescriptor;
 import yadi.java.client.linklayer.LinkLayer;
 import yadi.java.client.linklayer.LinkLayerException;
 import yadi.java.client.phylayer.PhyLayer;
@@ -30,9 +31,9 @@ public class DlmsClient {
 	private final LinkLayer link;
 	
 	/**
-	 * Creates a new Dlms instance
-	 * @param link - link layer object
-	 * @param settings - cosem settings
+	 * Creates a new Dlms instance, a facade to facilitate the usage of the Cosem, LinkLayer and PhyLayer.
+	 * @param link link layer object
+	 * @param settings cosem settings
 	 */
 	public DlmsClient(LinkLayer link, CosemParameters params) {
 		this.link = link;
@@ -40,9 +41,9 @@ public class DlmsClient {
 	}
 	
 	/**
-	 * 
-	 * @param phy
-	 * @throws PhyLayerException 
+	 * Connects to the server
+	 * @param phy PhyLayer to transmit / receive bytes
+	 * @throws PhyLayerException
 	 * @throws DlmsException 
 	 * @throws LinkLayerException 
 	 */
@@ -57,7 +58,7 @@ public class DlmsClient {
 	
 	/**
 	 * 
-	 * @param phy
+	 * @param phy PhyLayer to transmit / receive bytes
 	 * @throws PhyLayerException 
 	 * @throws DlmsException 
 	 * @throws LinkLayerException 
@@ -67,9 +68,9 @@ public class DlmsClient {
 	}
 	
 	/**
-	 * 
-	 * @param phy
-	 * @param obj
+	 * Performs a GET operation
+	 * @param phy PhyLayer to transmit / receive bytes
+	 * @param obj Long-name descriptor of the objected to be accessed
 	 * @throws PhyLayerException 
 	 * @throws DlmsException 
 	 * @throws LinkLayerException 
@@ -81,9 +82,9 @@ public class DlmsClient {
 	}
 	
 	/**
-	 * 
-	 * @param phy
-	 * @param obj
+	 * Performs a SET operation
+	 * @param phy PhyLayer to transmit / receive bytes
+	 * @param obj Long-name descriptor of the objected to be accessed
 	 * @throws PhyLayerException 
 	 * @throws DlmsException 
 	 * @throws LinkLayerException 
@@ -95,9 +96,9 @@ public class DlmsClient {
 	}
 	
 	/**
-	 * 
-	 * @param phy
-	 * @param obj
+	 * Performs a ACTION operation
+	 * @param phy PhyLayer to transmit / receive bytes
+	 * @param obj Long-name descriptor of the objected to be accessed
 	 * @throws PhyLayerException 
 	 * @throws DlmsException 
 	 * @throws LinkLayerException 

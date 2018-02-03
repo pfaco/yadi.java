@@ -62,10 +62,19 @@ public final class SerialPhyLayer implements PhyLayer {
 		}
 	}
 	
+	/**
+	 * Retrieves the list of serial ports in the system
+	 * @return an array of Strings with the name of each serial port in the system
+	 */
 	public static String[] getListOfAvailableSerialPorts() {
 		return (String[])SerialPortList.getPortNames();
 	}
 	
+	/**
+	 * Sets the RTS pin of the serial port
+	 * @param enabled true if the RTS pin should be set, false if it should be cleared
+	 * @throws PhyLayerException
+	 */
 	public void setRTS(boolean enabled) throws PhyLayerException
 	{
 		try {
@@ -75,7 +84,12 @@ public final class SerialPhyLayer implements PhyLayer {
 		}
 	}
 	
-	public void connect(String serialName) throws PhyLayerException {
+	/**
+	 * Opens the serial port
+	 * @param serialName name of the serial port to be opened
+	 * @throws PhyLayerException
+	 */
+	public void open(String serialName) throws PhyLayerException {
 		try {
 			serialPort = new SerialPort(serialName);
 			serialPort.openPort();
@@ -84,7 +98,10 @@ public final class SerialPhyLayer implements PhyLayer {
 		}
 	}
 	
-	public void disconnect() {
+	/**
+	 * Closes the serial port
+	 */
+	public void close() {
 		try {
 			serialPort.closePort();
 		} catch (SerialPortException e) {
@@ -92,6 +109,14 @@ public final class SerialPhyLayer implements PhyLayer {
 		}
 	}
 	
+	/**
+	 * Configures the serial port parameters
+	 * @param baudRate the desired baudrate im bps
+	 * @param dataBits the number of data bits in each byte
+	 * @param parity the type of parity to be used
+	 * @param stopBits the number of stop bits
+	 * @throws PhyLayerException
+	 */
 	public void config(int baudRate, DataBits dataBits, Parity parity, StopBits stopBits) throws PhyLayerException  {
 		try {
 			serialPort.setParams(baudRate, dataBits.dataBits, stopBits.stopBits, parity.par);		
@@ -100,18 +125,27 @@ public final class SerialPhyLayer implements PhyLayer {
 		}
 	}
 	
+	/**
+	 * Sends data through the serial port
+	 * @param data array of bytes to be sent
+	 */
 	@Override
-	public void sendData(byte[] dataToSend) throws PhyLayerException {
+	public void sendData(byte[] data) throws PhyLayerException {
         try {
-			serialPort.writeBytes(dataToSend);
+			serialPort.writeBytes(data);
 			for (PhyLayerListener listener : listeners) {
-				listener.dataSent(dataToSend);
+				listener.dataSent(data);
 			}
 		} catch (SerialPortException e) {
 			throw new PhyLayerException(PhyLayerExceptionReason.INTERNAL_ERROR);
 		}
     }
 
+	/**
+	 * Read data from the serial port
+	 * @param timeoutMillis maximum time to wait for a complete frame, in milliseconds
+	 * @param parser a PhyLayerParser to determine when a complete frame was received
+	 */
 	@Override
 	public byte[] readData(int timeoutMillis, PhyLayerParser parser) throws PhyLayerException {
 		if (timeoutMillis < 0 || parser == null) {
@@ -140,6 +174,11 @@ public final class SerialPhyLayer implements PhyLayer {
 		}
 	}
 
+	/**
+	 * Adds a listener to the serial port.
+	 * Each listener will receive an array of bytes containing each frame that is sent and received
+	 * through the serial port
+	 */
 	@Override
 	public void addListener(PhyLayerListener listener) {
 		listeners.add(listener);

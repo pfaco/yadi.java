@@ -24,40 +24,61 @@ import yadi.java.client.DlmsException.DlmsExceptionReason;
 
 public class DlmsParser {
 	
+	/**
+	 * Retrieves the DlmsType from an array of bytes
+	 * @param data array of bytes containing data result from a dlms-get
+	 * @return The DlmsType of the data
+	 * @throws DlmsException
+	 */
+	public static DlmsType getTypeFromRawBytes(byte[] data) throws DlmsException {
+		verify(data);
+		return DlmsType.fromTag(data[0]);
+	}
+
+	/**
+	 * Retrieves the String representation of the raw bytes.
+	 * The string will include the type and the size of the element parsed.
+	 * @param data array of bytes containing data result from a dlms-get
+	 * @return A String that represents the data
+	 * @throws DlmsException
+	 */
+	public static String parseRawBytes(byte[] data) throws DlmsException {
+		verify(data);
+		return rawBytesToString(DlmsType.fromTag(data[0]), data);
+	}
+	
+	/**
+	 * Retrieves the String representation of the element in the array of bytes
+	 * @param data array of bytes containing data result from a dlms-get
+	 * @return A Strig that represents the element in the data
+	 * @throws DlmsException
+	 */
+	public static String getString(byte[] data) throws DlmsException {
+		verify(data);
+		DlmsType type = DlmsType.fromTag(data[0]);
+		return DlmsParser.getStringValue(type, getPayload(type, data));
+	}
+	
+	/**
+	 * Retrieves the DateTime String representation of the element in the array of bytes
+	 * @param data array of bytes containing data result from a dlms-get
+	 * @return A Strig that represents the date and time in the data
+	 * @throws DlmsException
+	 */
+	public static String getDateTimeString(byte[] data) throws DlmsException {
+		verify(data);
+		DlmsType type = DlmsType.fromTag(data[0]);
+		return DlmsParser.getDateAndTimeString(getPayload(type, data));
+	}
+
 	private static void verify(byte[] data) throws DlmsException {
 		if (data == null || data.length < 2) {
 			throw new DlmsException(DlmsExceptionReason.INVALID_DATA);
 		}
 	}
 	
-	public static DlmsType getTypeFromRawBytes(byte[] data) throws DlmsException {
-		verify(data);
-		return DlmsType.fromTag(data[0]);
-	}
-
-	public static String parseRawBytes(byte[] data) throws DlmsException {
-		verify(data);
-		return rawBytesToString(DlmsType.fromTag(data[0]), data);
-	}
-	
-	public static String parseRawBytes(DlmsType type, byte[] data) throws DlmsException {
-		verify(data);
-		return rawBytesToString(type, data);
-	}
-	
-	public static String getStringValue(byte[] data) throws DlmsException {
-		verify(data);
-		DlmsType type = DlmsType.fromTag(data[0]);
-		return getStringValue(type, getPayload(type, data));
-	}
-	
 	private static byte[] getPayload(DlmsType type, byte[] data) {
-		int size = type.size;
-		int offset = 1;
-		if (size == 0) {
-			size = getSize(data);
-			offset = getOffset(data);
-		}
+		int offset = type.size == 0 ? getOffset(data) : 1;
 		return Arrays.copyOfRange(data, offset, data.length);
 	}
 
@@ -105,92 +126,40 @@ public class DlmsParser {
 	}
 
 	private static String rawBytesToString(DlmsType type, byte[] data) throws DlmsException {
-		int size = type.size;
-		if (size == 0) {
-			size = getSize(data);
-		}
+		int size = type.size == 0 ? getSize(data) : type.size;
 		byte[] payload = getPayload(type, data);
 		String text = getStringValue(type, payload);
-		switch (type) {
-		case ARRAY:
-			text = bytesToHex(payload);
-			break;
-		case BITSTRING:
-			text = bytesToHex(payload);
-			break;
-		case BOOLEAN:
-			text = bytesToHex(payload);
-			break;
-		case DATE:
-			text = bytesToHex(payload);
-			break;
-		case ENUM:
-			text = bytesToHex(payload);
-			break;
-		case FLOAT32:
-			text = Float.toString(Float.intBitsToFloat(ByteBuffer.wrap(payload).getInt(0)));
-			break;
-		case INT16:
-			text = Integer.toString(ByteBuffer.wrap(payload).getShort(0));
-			break;
-		case INT32:
-			text = Integer.toString(ByteBuffer.wrap(payload).getInt(0));
-			break;
-		case INT64:
-			text = Long.toString(ByteBuffer.wrap(payload).getLong(0));
-			break;
-		case INT8:
-			text = Integer.toString(payload[0]);
-			break;
-		case OCTET_STRING:
-			text = bytesToHex(payload);
-			break;
-		case STRING:
-			text = new String(payload);
-			break;
-		case STRUCTURE:
-			text = bytesToHex(payload);
-			break;
-		case TIME:
-			text = bytesToHex(payload);
-			break;
-		case UINT16:
-			text = Integer.toString(ByteBuffer.wrap(payload).getShort(0) & 0xFFFF);
-			break;
-		case UINT32:
-			text = Integer.toString(ByteBuffer.wrap(payload).getInt(0));
-			break;
-		case UINT64:
-			text = Long.toString(ByteBuffer.wrap(payload).getLong(0));
-			break;
-		case UINT8:
-			text = Integer.toString(payload[0]&0xFF);
-			break;
-		default:
-			throw new DlmsException(DlmsExceptionReason.NO_SUCH_TYPE);
+		if (size != 0) {
+			return type.name()+" | Size: "+size+" | Value: "+text;
+		} else {
+			return type.name()+" | Value: "+text;
 		}
-		return type.name()+" | Size: "+size+" | Value: "+text;
 	}
 
 	private static int getOffset(byte[] data) {
-		if ((data[1] & 0xFF) < 0x80) {
+		if ((data[1] & 0xFF) <= 0x80) {
 			return 2;
 		}
-		return 2 + (data[1] & 0x7F);
+		return (data[1] & 0x0F) + 2;
 	}
 
 	private static int getSize(byte[] data) {
-		if ((data[1] & 0xFF) < 0x80) {
-			return data[1];
+		if ((data[1] & 0xFF) <= 0x80) {
+			return data[1] & 0xFF;
 		}
-		int len = data[1] & 0x7F;
-		int offset = 2;
-		int size = 0;
-		while (len-- > 0) {
-			size <<= 8;
-			size |= data[offset++] & 0xFF;
+		if (data[1] == (byte)0x81) {
+			return data[2] & 0xFF;
 		}
-		return size;
+		if (data[1] == (byte)0x82) {
+			return ByteBuffer.allocate(2).put(data, 2, 2).getShort(0);
+		}
+		if (data[1] == (byte)0x83) {
+			return ByteBuffer.allocate(4).put((byte)0x00).put(data, 2, 3).getInt(0);
+		}
+		if (data[1] == (byte)0x84) {
+			return ByteBuffer.allocate(4).put(data, 2, 4).getInt(0);
+		}
+		throw new IllegalArgumentException();
 	}
 	
 	private static String bytesToHex(byte[] data) {
@@ -200,4 +169,32 @@ public class DlmsParser {
 		}
 		return sb.toString();
 	}
+	
+	private static String getDateAndTimeString(byte[] bytes) {
+		if (bytes.length < 8) {
+			throw new IllegalArgumentException();
+		}
+		String year = getYear(bytes);
+		String month = getDateValue(bytes[2], "MM");
+		String day = getDateValue(bytes[3], "DD");
+		String hour = getDateValue(bytes[5], "HH");
+		String min = getDateValue(bytes[6], "mm");
+		String sec = getDateValue(bytes[7], "SS");
+		return day+"/"+month+"/"+year+" "+hour+":"+min+":"+sec;
+	}
+
+	private static String getYear(byte[] bytes) {
+		if(bytes[0] == (byte)0xFF && bytes[1] == (byte)0xFF) {
+			return "YY";
+		}
+		return String.format("%04d", ByteBuffer.allocate(2).put(bytes,0,2).getShort(0));
+	}
+	
+	private static String getDateValue(byte val, String replacement ) {
+		if(val == (byte)0xFF) {
+			return replacement;
+		}
+		return String.format("%02d", val & 0xFF);
+	}
+
 }

@@ -18,6 +18,10 @@
 package yadi.java.client.linklayer;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+
+import yadi.java.client.linklayer.LinkLayerException.LinkLayerExceptionReason;
 import yadi.java.client.phylayer.PhyLayer;
 import yadi.java.client.phylayer.PhyLayerException;
 
@@ -26,20 +30,39 @@ public class WrapperLinkLayer implements LinkLayer {
 	private static final short WRAPPER_VERSION = 1;
 	private final WrapperParameters params;
 	
+	/**
+	 * Creates a WrapperLinkLayer object
+	 * @param params the WrapperParameters for this object
+	 */
 	public WrapperLinkLayer(WrapperParameters params) {
 		this.params = params;
 	}
 
+	/**
+	 * Wrapper doesn't have a connection procedure, this function doesn't need to be called when
+	 * using the Wrapper protocol as link layer for the COSEM APDU's.
+	 * @param phy the PhyLayer to transmit and receive bytes
+	 */
 	@Override
 	public void connect(PhyLayer phy) throws PhyLayerException, LinkLayerException {
 		//no connection necessary
 	}
 
+	/**
+	 * Wrapper doesn't have a disconnection procedure, this function doesn't need to be called when
+	 * using the Wrapper protocol as link layer for the COSEM APDU's.
+	 * @param phy the PhyLayer to transmit and receive bytes
+	 */
 	@Override
 	public void disconnect(PhyLayer phy) throws PhyLayerException, LinkLayerException {
 		//no disconnection necessary
 	}
 
+	/**
+	 * Encapsulates data inside a Wrapper frame and sends it
+	 * @param phy the PhyLayer to transmit and receive bytes
+	 * @param data the array of bytes to be encapsulated and transmitted
+	 */
 	@Override
 	public void send(PhyLayer phy, byte[] data) throws PhyLayerException, LinkLayerException {
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -56,18 +79,36 @@ public class WrapperLinkLayer implements LinkLayer {
 		phy.sendData(stream.toByteArray());
 	}
 
+	/**
+	 * Retrieves the data encapsulated inside a Wrapper frame
+	 * @param phy the PhyLayer to receive bytes
+	 * @return array of bytes with the application data unit contents inside the Wrapper frame
+	 */
 	@Override
 	public byte[] read(PhyLayer phy) throws PhyLayerException, LinkLayerException {
 		byte[] data = phy.readData(params.timeoutMillis, (a) -> messageComplete(a));
-		//TODO
-		return data;
+		
+		short version = ByteBuffer.allocate(2).put(data,0,2).getShort(0);
+		short wPortSource = ByteBuffer.allocate(2).put(data,2,2).getShort(0);
+		short wPortDestination = ByteBuffer.allocate(2).put(data,4,2).getShort(0);
+		
+		if (version != WRAPPER_VERSION) {
+			throw new LinkLayerException(LinkLayerExceptionReason.RECEIVED_INVALID_FRAME_FORMAT);
+		}
+		
+		if (wPortSource != params.wPortDestination ||
+		    wPortDestination != params.wPortSource	) {
+			throw new LinkLayerException(LinkLayerExceptionReason.RECEIVED_INVALID_ADDRESS);
+		}
+		
+		return Arrays.copyOfRange(data, 8, data.length);
 	}
 	
 	private boolean messageComplete(byte[] data) {
 		if (data.length < 8) {
 			return false;
 		}
-		short size = (short)(((short)data[0])&0xff << 8 | data[1]);
+		short size = ByteBuffer.allocate(2).put(data,0,2).getShort(0);
 
 		if (data.length < size + 8) {
 			return false;

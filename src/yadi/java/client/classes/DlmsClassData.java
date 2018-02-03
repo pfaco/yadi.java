@@ -17,23 +17,26 @@
  */
 package yadi.java.client.classes;
 
-import yadi.java.client.LnDescriptor;
 import yadi.java.client.Obis;
+import yadi.java.client.cosem.LnDescriptor;
 
 public class DlmsClassData extends DlmsClass {
 	private static final int CLASS_ID = 1;
 	private final LnDescriptor attValue;
 	
+	/**
+	 * Creates a Data class (class_id=1) object
+	 * @param obis the object obis
+	 */
 	public DlmsClassData(Obis obis) {
 		super(CLASS_ID, obis);
 		attValue = new LnDescriptor(CLASS_ID, 2, obis);
 	}
 	
-	DlmsClassData(int classId, Obis obis) {
-		super(classId, obis);
-		attValue = new LnDescriptor(classId, 2, obis);
-	}
-	
+	/**
+	 * Retrieves the value attribute (index 2) of the object
+	 * @return LnDescritptor with index = 2
+	 */
 	public LnDescriptor attValue() {
 		return attValue;
 	}

@@ -22,6 +22,11 @@ import yadi.java.client.phylayer.PhyLayerException;
 
 public class Emode {
 
+	/**
+	 * Performs the steps necessary for a connection in the MODE-E
+	 * @param com PhyLayer object to be used for data tx/rx
+	 * @throws PhyLayerException
+	 */
 	public static void connect(PhyLayer com) throws PhyLayerException {
 		try {
 			com.sendData("/?!\r\n".getBytes());

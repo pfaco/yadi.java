@@ -24,8 +24,9 @@ public class DlmsException extends Exception {
 	public enum DlmsExceptionReason {
 		INTERNAL_ERROR, 
 		INVALID_SETTING, 
-		RECEIVED_INVALID_COMMAND_ID, 
+		INVALID_DATA_TYPE,
 		INVALID_DATA, 
+		RECEIVED_INVALID_COMMAND_ID, 
 		NO_SUCH_TYPE,
 		MALFORMED_AARE_FRAME, 
 		CONNECTION_REJECTED,
@@ -63,7 +64,7 @@ public class DlmsException extends Exception {
 		ACCESS_RESULT_LONG_SET_ABORTED,
 		ACCESS_RESULT_NO_LONG_SET_IN_PROGRESS,
 		ACCESS_RESULT_DATA_BLOCK_NUMBER_INVALID,
-		ACCESS_RESULT_OTHER_REASON
+		ACCESS_RESULT_OTHER_REASON,
 	}
 	
 	private final DlmsExceptionReason[] reason;
@@ -76,6 +77,10 @@ public class DlmsException extends Exception {
 		this.reason = reasons;
 	}
 	
+	/**
+	 * Retrieves the reason of the exception
+	 * @return A DlmsExceptionReason
+	 */
 	public DlmsExceptionReason[] getReason() {
 		return reason;
 	}

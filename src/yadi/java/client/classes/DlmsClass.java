@@ -17,16 +17,25 @@
  */
 package yadi.java.client.classes;
 
-import yadi.java.client.LnDescriptor;
 import yadi.java.client.Obis;
+import yadi.java.client.cosem.LnDescriptor;
 
 class DlmsClass {
 	private final LnDescriptor attObis;
 	
+	/**
+	 * Creates an object of DlmsClass
+	 * @param classId the id of the class
+	 * @param obis the obis of the object
+	 */
 	public DlmsClass(int classId, Obis obis) {
 		attObis = new LnDescriptor(classId, 1, obis);
 	}
 	
+	/**
+	 * Gets the attribute 1 (OBIS) of the class
+	 * @return LnDescriptor with index = 1
+	 */
 	public LnDescriptor attObis() {
 		return attObis;
 	}

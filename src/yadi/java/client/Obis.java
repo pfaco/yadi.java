@@ -21,10 +21,23 @@ public class Obis {
 	
 	private final byte[] value;
 	
+	/**
+	 * Creates a OBIS using the byte value for each group
+	 * @param A byte value of group A
+	 * @param B byte value of group B
+	 * @param C byte value of group C
+	 * @param D byte value of group D
+	 * @param E byte value of group E
+	 * @param F byte value of group F
+	 */
 	public Obis(int A, int B, int C, int D, int E, int F) {
 		value = new byte[] {(byte)A, (byte)B, (byte)C, (byte)D, (byte)E, (byte)F};
 	}
 	
+	/**
+	 * Creates a OBIS using a string representation
+	 * @param obis a String representing the OBIS in the form A.B.C.D.E.F
+	 */
 	public Obis(String obis) {
 		String[] data = obis.split("\\.");
 		if (data.length != 6) {
@@ -39,6 +52,10 @@ public class Obis {
 							(byte)Integer.parseInt(data[5])};
 	}
 	
+	/**
+	 * Retrieves the byte array representing the value of each group of the OBIS
+	 * @return byte array of the OBIS value
+	 */
 	public byte[] getValue() {
 		return value;
 	}

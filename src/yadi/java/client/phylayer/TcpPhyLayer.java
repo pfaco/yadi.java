@@ -27,11 +27,18 @@ import java.util.ArrayList;
 import yadi.java.client.phylayer.PhyLayerException.PhyLayerExceptionReason;
 
 public class TcpPhyLayer implements PhyLayer {
+	
 	private final ArrayList<PhyLayerListener> listeners = new ArrayList<PhyLayerListener>();
 	private final ByteArrayOutputStream stream = new ByteArrayOutputStream();
 	private Socket socket;
 		
-	public void connect(String ip, int port) throws PhyLayerException {
+	/**
+	 * Opens the TCP socket
+	 * @param ip String representing the IP to connect to
+	 * @param port Number of the port to connect to
+	 * @throws PhyLayerException
+	 */
+	public void open(String ip, int port) throws PhyLayerException {
 		try {
 			socket = new Socket(ip, port);
 		} catch (UnknownHostException e) {
@@ -41,7 +48,10 @@ public class TcpPhyLayer implements PhyLayer {
 		}
 	}
 
-	public void disconnect() {
+	/**
+	 * Closes the TCP socket
+	 */
+	public void close() {
 		try {
 			socket.close();
 		} catch (IOException e) {
@@ -49,6 +59,10 @@ public class TcpPhyLayer implements PhyLayer {
 		}
 	}
 
+	/**
+	 * Sends data through the TCP socket
+	 * @param data array of bytes to be sent
+	 */
 	@Override
 	public void sendData(byte[] data) throws PhyLayerException {
 		try {
@@ -61,7 +75,12 @@ public class TcpPhyLayer implements PhyLayer {
 			throw new PhyLayerException(PhyLayerExceptionReason.INTERNAL_ERROR);
 		}
 	}
-
+	
+	/**
+	 * Read data from the TCP socket
+	 * @param timeoutMillis maximum time to wait for a complete frame, in milliseconds
+	 * @param parser a PhyLayerParser to determine when a complete frame was received
+	 */
 	@Override
 	public byte[] readData(int timeoutMillis, PhyLayerParser parser) throws PhyLayerException {
 		if (timeoutMillis < 0 || parser == null) {
@@ -90,6 +109,11 @@ public class TcpPhyLayer implements PhyLayer {
 		}
 	}
 
+	/**
+	 * Adds a listener to the TCP socket.
+	 * Each listener will receive an array of bytes containing each frame that is sent and received
+	 * through the TCP socket
+	 */
 	@Override
 	public void addListener(PhyLayerListener listener) {
 		listeners.add(listener);

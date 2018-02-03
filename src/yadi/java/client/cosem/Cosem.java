@@ -24,7 +24,6 @@ import java.security.InvalidParameterException;
 import java.util.Arrays;
 
 import yadi.java.client.DlmsException;
-import yadi.java.client.LnDescriptor;
 import yadi.java.client.Obis;
 import yadi.java.client.DlmsException.DlmsExceptionReason;
 import yadi.java.client.cosem.CosemParameters.AuthenticationType;
@@ -32,25 +31,34 @@ import yadi.java.client.cosem.CosemParameters.SecurityType;
 
 public class Cosem {
 	
-	/**
-	 * Possible COSEM connection states
-	 */
-	enum ConnectionState {
+	private enum ConnectionState {
 		DISCONNECTED, CONNECTED, AUTHENTICATED
 	}
 	
 	private final CosemParameters params;
 	private ConnectionState state = ConnectionState.DISCONNECTED;
 
+	/**
+	 * Creates a Cosem object
+	 * @param params CosemParameters for this Cosem object
+	 */
 	public Cosem(CosemParameters params) {
 		this.params = params;
 	}
 	
+	/**
+	 * Resets the internal connection state, must be called before each connection attempt
+	 */
 	public void reset() {
 		state = ConnectionState.DISCONNECTED;
-		params.connection.reset();
 	}
 
+	/**
+	 * Generates the next APDU for establishment of a association with the metering devices
+	 * The number and content of the APDU will vary according to the HdlcParams configuration
+	 * @return the array of bytes that represents the next APDU to be sent for connection establishment
+	 * @throws DlmsException
+	 */
 	public byte[] connectionRequest() throws DlmsException {
 		try {
 			switch (state) {
@@ -76,6 +84,12 @@ public class Cosem {
 		}
 	}
 	
+	/**
+	 * Parses the response of the last connection APDU sent
+	 * @param data array of bytes with the APDU received from the metering device
+	 * @return true if the connection is established and false if more steps are necessary
+	 * @throws DlmsException
+	 */
 	public boolean parseConnectionResponse(byte[] data) throws DlmsException {
 		switch (state) {
 		case DISCONNECTED:
@@ -85,7 +99,7 @@ public class Cosem {
 		case CONNECTED:
 			LnDescriptor att = new LnDescriptor(15, 1, new Obis(0, 0, 40, 0, 0, 255));
 			parseActionResponse(att, data);
-			byte[] receivedData = att.getReceivedData();
+			byte[] receivedData = att.getResponseData();
 			if (receivedData == null || receivedData.length < 3 || receivedData[0] != Constants.DataType.OCTET_STRING) {
 				throw new DlmsException(DlmsExceptionReason.CONNECTION_REJECTED);
 			}
@@ -103,13 +117,13 @@ public class Cosem {
 			throw new IllegalStateException();
 		}
 	}
-	
-	public byte[] disconnectionRequest() {
-		state = ConnectionState.DISCONNECTED;
-		params.connection.reset();
-		return new byte[0];
-	}
 
+	/**
+	 * Generates the APDU for a GET request
+	 * @param att LnDescriptor describing the object to be accessed
+	 * @return byte array representation of the APDU
+	 * @throws DlmsException
+	 */
 	public byte[] requestGet(LnDescriptor att) throws DlmsException {
 		try {
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -131,6 +145,12 @@ public class Cosem {
 		}
 	}
 	
+	/**
+	 * Generates the APDU for a SET request
+	 * @param att LnDescriptor describing the object to be accessed
+	 * @return byte array representation of the APDU
+	 * @throws DlmsException
+	 */
 	public byte[] requestSet(LnDescriptor att) throws DlmsException {
 		try {
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -148,6 +168,12 @@ public class Cosem {
 		}
 	}
 	
+	/**
+	 * Generates the APDU for a ACTION request
+	 * @param att LnDescriptor describing the object to be accessed
+	 * @return byte array representation of the APDU
+	 * @throws DlmsException
+	 */
 	public byte[] requestAction(LnDescriptor att) throws DlmsException {
 		try {
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();
@@ -165,6 +191,12 @@ public class Cosem {
 		}
 	}
 	
+	/**
+	 * Parses the APDU of a GET response
+	 * @param att LnDescriptor describing the object accessed
+	 * @return true if the parse if finished, false if more apdu's are necessary (data block transfer)
+	 * @throws DlmsException
+	 */
 	public boolean parseGetResponse(LnDescriptor att, byte[] data) throws DlmsException {
 		try {
 			data = unpackFrame(Constants.xDlmsApdu.NoCiphering.GET_RESPONSE,
@@ -203,18 +235,12 @@ public class Cosem {
 		}
 	}
 
-	private void verifyDataAccessResult(byte result) throws DlmsException {
-		if (result == 0) {
-			return;
-		}
-		for (Constants.AccessResult a : Constants.AccessResult.values()) {
-			if (a.val == result) {
-				throw new DlmsException(DlmsExceptionReason.valueOf(a.toString()));
-			}
-		}
-		throw new DlmsException(DlmsExceptionReason.UNKNOWN_ACCESS_RESULT_FAILURE);
-	}
-
+	/**
+	 * Parses the APDU of a SET response
+	 * @param att LnDescriptor describing the object accessed
+	 * @return true if the parse if finished, false if more apdu's are necessary (data block transfer)
+	 * @throws DlmsException
+	 */
 	public boolean parseSetResponse(LnDescriptor att, byte[] data) throws DlmsException {
 		data = unpackFrame(Constants.xDlmsApdu.NoCiphering.SET_RESPONSE,
 		                   Constants.xDlmsApdu.GlobalCiphering.SET_RESPONSE, data);
@@ -230,6 +256,12 @@ public class Cosem {
 		return true;
 	}
 
+	/**
+	 * Parses the APDU of a ACTION response
+	 * @param att LnDescriptor describing the object accessed
+	 * @return true if the parse if finished, false if more apdu's are necessary (data block transfer)
+	 * @throws DlmsException
+	 */
 	public boolean parseActionResponse(LnDescriptor att, byte[] data) throws DlmsException {
 		data = unpackFrame(Constants.xDlmsApdu.NoCiphering.ACTION_RESPONSE,
                            Constants.xDlmsApdu.GlobalCiphering.ACTION_RESPONSE, data);
@@ -239,6 +271,18 @@ public class Cosem {
 		}
 		
 		return true;
+	}
+	
+	private void verifyDataAccessResult(byte result) throws DlmsException {
+		if (result == 0) {
+			return;
+		}
+		for (Constants.AccessResult a : Constants.AccessResult.values()) {
+			if (a.val == result) {
+				throw new DlmsException(DlmsExceptionReason.valueOf(a.toString()));
+			}
+		}
+		throw new DlmsException(DlmsExceptionReason.UNKNOWN_ACCESS_RESULT_FAILURE);
 	}
 	
 	private byte[] packFrame(int cmdGlobalCipher, byte[] payload) throws DlmsException {
@@ -333,10 +377,6 @@ public class Cosem {
 		}
 		
 		return Arrays.copyOfRange(data, offset+nBytes+skip, data.length);
-	}
-
-	public boolean parseDisconnectionResponse(byte[] read) {
-		return true;
 	}
 	
 }
