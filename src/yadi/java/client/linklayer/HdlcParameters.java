@@ -59,9 +59,9 @@ public class HdlcParameters {
 		if (lowerAddress < 0 || lowerAddress > 0x3FFF || upperAddress < 0 || upperAddress > 0x3FFF) {
 			throw new IllegalArgumentException("Maximum address is 0x3FFF");
 		}
-		this.serverAddress = new byte[]{ (byte)((upperAddress >>> 7) & 0xFE), 
+		this.serverAddress = new byte[]{ (byte)((upperAddress >>> 6) & 0xFE), 
 				                         (byte)((upperAddress << 1)  & 0xFE),
-				                         (byte)((lowerAddress >>> 7) & 0xFE),
+				                         (byte)((lowerAddress >>> 6) & 0xFE),
 				                         (byte)((lowerAddress << 1)  | 0x01)};
 	}
 	

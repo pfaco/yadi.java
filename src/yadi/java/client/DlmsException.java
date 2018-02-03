@@ -77,6 +77,16 @@ public class DlmsException extends Exception {
 		this.reason = reasons;
 	}
 	
+	public DlmsException(DlmsExceptionReason reason, String message) {
+		super(message);
+		this.reason = new DlmsExceptionReason[]{reason};
+	}
+	
+	public DlmsException(DlmsExceptionReason[] reasons, String message) {
+		super(message);
+		this.reason = reasons;
+	}
+	
 	/**
 	 * Retrieves the reason of the exception
 	 * @return A DlmsExceptionReason

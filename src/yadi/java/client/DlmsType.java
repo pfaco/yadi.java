@@ -22,22 +22,26 @@ import yadi.java.client.DlmsException.DlmsExceptionReason;
 public enum DlmsType {
 	ARRAY(1,0),
 	STRUCTURE(2,0),
+	BCD(13,0),
 	BITSTRING(4,0),
 	BOOLEAN(3,1),
-	DATE(26,0),
-	ENUM(22,0),
+	DATE(26,5),
+	DATE_TIME(25,12),
+	ENUM(22,1),
 	FLOAT32(23,4),
-	INT16(18,2),
+	FLOAT64(24,8),
+	INT16(16,2),
 	INT32(5,4),
 	INT64(20,8),
 	INT8(15,1),
 	OCTET_STRING(9,0),
 	STRING(10,0),
-	TIME(27,0),
+	UTF8_STRING(12,0),
+	TIME(27,4),
 	UINT8(17,1),
 	UINT16(18,2),
 	UINT32(6,4),
-	UINT64(20,8);
+	UINT64(21,8);
 	
 	public final byte tag;
 	final int size;
@@ -53,6 +57,6 @@ public enum DlmsType {
 				return type;
 			}
 		}
-		throw new DlmsException(DlmsExceptionReason.NO_SUCH_TYPE);
+		throw new DlmsException(DlmsExceptionReason.NO_SUCH_TYPE, "Tag: "+tag);
 	}
 }

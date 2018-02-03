@@ -23,14 +23,12 @@ import java.util.ArrayList;
 public class DlmsItem {
 	
 	private final DlmsType type;
-	private final int size;
-	private final byte[] data;
+	private final String value;
 	private final ArrayList<DlmsItem> children = new ArrayList<DlmsItem>();
 	
-	public DlmsItem(DlmsType type, int size, byte[] data) {
+	public DlmsItem(DlmsType type, String value) {
 		this.type = type;
-		this.size = size;
-		this.data = data;
+		this.value = value;
 	}
 	
 	public void addChildren(DlmsItem item) {
@@ -45,12 +43,8 @@ public class DlmsItem {
 		return type;
 	}
 	
-	public int getSize() {
-		return size;
-	}
-	
-	public byte[] getData() {
-		return data;
+	public String getValue() {
+		return value;
 	}
 
 }

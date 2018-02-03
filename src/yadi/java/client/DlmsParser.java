@@ -18,6 +18,7 @@
 package yadi.java.client;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import yadi.java.client.DlmsException.DlmsExceptionReason;
@@ -42,11 +43,45 @@ public class DlmsParser {
 	 * @return A String that represents the data
 	 * @throws DlmsException
 	 */
-	public static String parseRawBytes(byte[] data) throws DlmsException {
+	public static DlmsItem getDlmsItem(byte[] data) throws DlmsException {
 		verify(data);
-		return rawBytesToString(DlmsType.fromTag(data[0]), data);
+		DlmsType type = DlmsType.fromTag(data[0]);
+		DlmsItem item = new DlmsItem(type, getString(data));
+		int numberOfItems = getNumberOfItems(type,data);
+		for (int i = 0; i < numberOfItems; ++i) {
+			data = getNextData(data);
+			parseItems(item, data);
+		}
+		return item;
+	}
+
+	private static void parseItems(DlmsItem parent, byte[] data) throws DlmsException {
+		if (data.length == 0) {
+			return;
+		}
+		DlmsType type = DlmsType.fromTag(data[0]);
+		DlmsItem item = new DlmsItem(type, getString(data));
+		parent.addChildren(item);
+		int numberOfItems = getNumberOfItems(type,data);
+		for (int i = 0; i < numberOfItems; ++i) {
+			data = getNextData(data);
+			parseItems(item, data);
+		}
 	}
 	
+	private static byte[] getNextData(byte[] data) throws DlmsException {
+		if (data == null || data.length == 0) {
+			return new byte[0];
+		}
+		DlmsType type = DlmsType.fromTag(data[0]);
+		if (getNumberOfItems(type,data) == 0) {
+			int offset = type.size == 0 ? getSize(data) + getOffset(data) : type.size + 1;
+			return Arrays.copyOfRange(data, offset, data.length);
+		}
+		int offset = getOffset(data);
+		return Arrays.copyOfRange(data, offset, data.length);
+	}
+
 	/**
 	 * Retrieves the String representation of the element in the array of bytes
 	 * @param data array of bytes containing data result from a dlms-get
@@ -60,6 +95,17 @@ public class DlmsParser {
 	}
 	
 	/**
+	 * Retrieves the String representation of the element in the array of bytes
+	 * @param type the DlmsType of the byte array
+	 * @param data array of bytes containing data result from a dlms-get
+	 * @return A Strig that represents the element in the data
+	 * @throws DlmsException
+	 */
+	public static String getString(DlmsType type, byte[] payload) throws DlmsException {
+		return DlmsParser.getStringValue(type, payload);
+	}
+	
+	/**
 	 * Retrieves the DateTime String representation of the element in the array of bytes
 	 * @param data array of bytes containing data result from a dlms-get
 	 * @return A Strig that represents the date and time in the data
@@ -68,7 +114,38 @@ public class DlmsParser {
 	public static String getDateTimeString(byte[] data) throws DlmsException {
 		verify(data);
 		DlmsType type = DlmsType.fromTag(data[0]);
-		return DlmsParser.getDateAndTimeString(getPayload(type, data));
+		return DlmsParser.getDateTimeStringValue(getPayload(type, data));
+	}
+	
+	/**
+	 * Retrieves the Date String representation of the element in the array of bytes
+	 * @param data array of bytes containing data result from a dlms-get
+	 * @return A Strig that represents the date in the data
+	 * @throws DlmsException
+	 */
+	public static String getDateString(byte[] data) throws DlmsException {
+		verify(data);
+		DlmsType type = DlmsType.fromTag(data[0]);
+		return DlmsParser.getDateStringValue(getPayload(type, data));
+	}
+	
+	/**
+	 * Retrieves the Time String representation of the element in the array of bytes
+	 * @param data array of bytes containing data result from a dlms-get
+	 * @return A Strig that represents the time in the data
+	 * @throws DlmsException
+	 */
+	public static String getTimeString(byte[] data) throws DlmsException {
+		verify(data);
+		DlmsType type = DlmsType.fromTag(data[0]);
+		return DlmsParser.getTimeStringValue(getPayload(type, data));
+	}
+	
+	private static int getNumberOfItems(DlmsType type, byte[] data) {
+		if (type.equals(DlmsType.ARRAY) ||type.equals(DlmsType.STRUCTURE)) {
+			return getSize(data);
+		}
+		return 0;
 	}
 
 	private static void verify(byte[] data) throws DlmsException {
@@ -79,23 +156,30 @@ public class DlmsParser {
 	
 	private static byte[] getPayload(DlmsType type, byte[] data) {
 		int offset = type.size == 0 ? getOffset(data) : 1;
-		return Arrays.copyOfRange(data, offset, data.length);
+		int size = type.size == 0 ? getSize(data) : type.size;
+		return Arrays.copyOfRange(data, offset, offset+size);
 	}
 
 	private static String getStringValue(DlmsType type, byte[] payload) throws DlmsException {
 		switch (type) {
 		case ARRAY:
 			return bytesToHex(payload);
+		case BCD:
+			return bytesToHex(payload);
 		case BITSTRING:
 			return bytesToHex(payload);
 		case BOOLEAN:
 			return bytesToHex(payload);
 		case DATE:
-			return bytesToHex(payload);
+			return getDateStringValue(payload);
+		case DATE_TIME:
+			return getDateTimeStringValue(payload);
 		case ENUM:
 			return bytesToHex(payload);
 		case FLOAT32:
-			return Float.toString(Float.intBitsToFloat(ByteBuffer.wrap(payload).getInt(0)));
+			return Float.toString(ByteBuffer.wrap(payload).getFloat());
+		case FLOAT64:
+			return Double.toString(ByteBuffer.wrap(payload).getDouble());
 		case INT16:
 			return Integer.toString(ByteBuffer.wrap(payload).getShort(0));
 		case INT32:
@@ -107,33 +191,23 @@ public class DlmsParser {
 		case OCTET_STRING:
 			return bytesToHex(payload);
 		case STRING:
-			return new String(payload);
+			return new String(payload, Charset.forName("US-ASCII"));
 		case STRUCTURE:
 			return bytesToHex(payload);
 		case TIME:
-			return bytesToHex(payload);
+			return getTimeStringValue(payload);
 		case UINT16:
 			return Integer.toString(ByteBuffer.wrap(payload).getShort(0) & 0xFFFF);
 		case UINT32:
-			return Integer.toString(ByteBuffer.wrap(payload).getInt(0));
+			return Integer.toUnsignedString(ByteBuffer.wrap(payload).getInt(0));
 		case UINT64:
-			return Long.toString(ByteBuffer.wrap(payload).getLong(0));
+			return Long.toUnsignedString(ByteBuffer.wrap(payload).getLong(0));
 		case UINT8:
-			return Integer.toString(payload[0]&0xFF);
-		default:
-			throw new DlmsException(DlmsExceptionReason.NO_SUCH_TYPE);
+			return Integer.toString(payload[0] & 0xFF);
+		case UTF8_STRING:
+			return new String(payload, Charset.forName("UTF-8"));
 		}
-	}
-
-	private static String rawBytesToString(DlmsType type, byte[] data) throws DlmsException {
-		int size = type.size == 0 ? getSize(data) : type.size;
-		byte[] payload = getPayload(type, data);
-		String text = getStringValue(type, payload);
-		if (size != 0) {
-			return type.name()+" | Size: "+size+" | Value: "+text;
-		} else {
-			return type.name()+" | Value: "+text;
-		}
+		throw new DlmsException(DlmsExceptionReason.NO_SUCH_TYPE);
 	}
 
 	private static int getOffset(byte[] data) {
@@ -151,13 +225,13 @@ public class DlmsParser {
 			return data[2] & 0xFF;
 		}
 		if (data[1] == (byte)0x82) {
-			return ByteBuffer.allocate(2).put(data, 2, 2).getShort(0);
+			return ByteBuffer.wrap(data, 2, 2).getShort(0);
 		}
 		if (data[1] == (byte)0x83) {
 			return ByteBuffer.allocate(4).put((byte)0x00).put(data, 2, 3).getInt(0);
 		}
 		if (data[1] == (byte)0x84) {
-			return ByteBuffer.allocate(4).put(data, 2, 4).getInt(0);
+			return ByteBuffer.wrap(data, 2, 4).getInt(0);
 		}
 		throw new IllegalArgumentException();
 	}
@@ -165,12 +239,32 @@ public class DlmsParser {
 	private static String bytesToHex(byte[] data) {
 		StringBuilder sb = new StringBuilder();
 		for (byte b : data) {
-			sb.append(String.format("%02x ", b));
+			sb.append(String.format("%02X ", b));
 		}
 		return sb.toString();
 	}
 	
-	private static String getDateAndTimeString(byte[] bytes) {
+	private static String getTimeStringValue(byte[] bytes) {
+		if (bytes.length < 4) {
+			throw new IllegalArgumentException();
+		}
+		String hour = getDateValue(bytes[0], "HH");
+		String min = getDateValue(bytes[1], "mm");
+		String sec = getDateValue(bytes[2], "SS");
+		return hour+":"+min+":"+sec;
+	}
+	
+	private static String getDateStringValue(byte[] bytes) {
+		if (bytes.length < 5) {
+			throw new IllegalArgumentException();
+		}
+		String year = getYear(bytes);
+		String month = getDateValue(bytes[2], "MM");
+		String day = getDateValue(bytes[3], "DD");
+		return year+"/"+month+"/"+day;
+	}
+	
+	private static String getDateTimeStringValue(byte[] bytes) {
 		if (bytes.length < 8) {
 			throw new IllegalArgumentException();
 		}
@@ -180,7 +274,7 @@ public class DlmsParser {
 		String hour = getDateValue(bytes[5], "HH");
 		String min = getDateValue(bytes[6], "mm");
 		String sec = getDateValue(bytes[7], "SS");
-		return day+"/"+month+"/"+year+" "+hour+":"+min+":"+sec;
+		return year+"/"+month+"/"+day+" "+hour+":"+min+":"+sec;
 	}
 
 	private static String getYear(byte[] bytes) {
