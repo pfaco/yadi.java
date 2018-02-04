@@ -181,11 +181,11 @@ public class DlmsParser {
 		case FLOAT64:
 			return Double.toString(ByteBuffer.wrap(payload).getDouble());
 		case INT16:
-			return Integer.toString(ByteBuffer.wrap(payload).getShort(0));
+			return Integer.toString(ByteBuffer.wrap(payload).getShort());
 		case INT32:
-			return Integer.toString(ByteBuffer.wrap(payload).getInt(0));
+			return Integer.toString(ByteBuffer.wrap(payload).getInt());
 		case INT64:
-			return Long.toString(ByteBuffer.wrap(payload).getLong(0));
+			return Long.toString(ByteBuffer.wrap(payload).getLong());
 		case INT8:
 			return Integer.toString(payload[0]);
 		case OCTET_STRING:
@@ -197,11 +197,11 @@ public class DlmsParser {
 		case TIME:
 			return getTimeStringValue(payload);
 		case UINT16:
-			return Integer.toString(ByteBuffer.wrap(payload).getShort(0) & 0xFFFF);
+			return Integer.toString(ByteBuffer.wrap(payload).getShort() & 0xFFFF);
 		case UINT32:
-			return Integer.toUnsignedString(ByteBuffer.wrap(payload).getInt(0));
+			return Integer.toUnsignedString(ByteBuffer.wrap(payload).getInt());
 		case UINT64:
-			return Long.toUnsignedString(ByteBuffer.wrap(payload).getLong(0));
+			return Long.toUnsignedString(ByteBuffer.wrap(payload).getLong());
 		case UINT8:
 			return Integer.toString(payload[0] & 0xFF);
 		case UTF8_STRING:
@@ -225,13 +225,13 @@ public class DlmsParser {
 			return data[2] & 0xFF;
 		}
 		if (data[1] == (byte)0x82) {
-			return ByteBuffer.wrap(data, 2, 2).getShort(0);
+			return ByteBuffer.wrap(data, 2, 2).getShort();
 		}
 		if (data[1] == (byte)0x83) {
 			return ByteBuffer.allocate(4).put((byte)0x00).put(data, 2, 3).getInt(0);
 		}
 		if (data[1] == (byte)0x84) {
-			return ByteBuffer.wrap(data, 2, 4).getInt(0);
+			return ByteBuffer.wrap(data, 2, 4).getInt();
 		}
 		throw new IllegalArgumentException();
 	}
