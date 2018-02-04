@@ -4,6 +4,7 @@
   <artifactId>yadi.java.client</artifactId>
   <version>0.0.2a</version>
   <build>
+    <testSourceDirectory>test</testSourceDirectory>
     <sourceDirectory>src</sourceDirectory>
     <plugins>
       <plugin>
@@ -15,12 +16,28 @@
         </configuration>
       </plugin>
     </plugins>
+    <resources>
+      <resource>
+        <directory>C:\Users\paulo\workspace\yadi.java.client\src\resources</directory>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>C:\Users\paulo\workspace\yadi.java.client\test\resources</directory>
+      </testResource>
+    </testResources>
   </build>
     <dependencies>
   	<dependency>
   		<groupId>org.scream3r</groupId>
   		<artifactId>jssc</artifactId>
   		<version>2.8.0</version>
+  	</dependency>
+  	<dependency>
+  		<groupId>org.junit.jupiter</groupId>
+  		<artifactId>junit-jupiter-api</artifactId>
+  		<version>5.0.1</version>
+  		<scope>test</scope>
   	</dependency>
     </dependencies>
 </project>
