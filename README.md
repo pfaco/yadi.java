@@ -1,7 +1,7 @@
 # yadi.java 
 YADI (Yet Another DLMS implementation) is a library for communication with metering devices using the DLMS standard. Check the wiki for code examples!
 
-[![Build Status](https://travis-ci.org/pfaco/yadi.java.client.png)](https://travis-ci.org/pfaco/yadi.java.client)
+[![Build Status](https://travis-ci.org/pfaco/yadi.java.png)](https://travis-ci.org/pfaco/yadi.java)
 
 ### Highlights
 	* Application layer (COSEM) decoupled from link layer
