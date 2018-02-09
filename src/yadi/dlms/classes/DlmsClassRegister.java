@@ -20,8 +20,8 @@ package yadi.dlms.classes;
 import yadi.dlms.Obis;
 import yadi.dlms.cosem.LnDescriptor;
 
-public class DlmsClassRegister extends DlmsClass {
-	private static final int CLASS_ID = 2;
+public class DlmsClassRegister {
+	private final LnDescriptor attObis;
 	private final LnDescriptor attValue;
 	private final LnDescriptor attScalarUnit;
 	private final LnDescriptor mtdReset;
@@ -31,10 +31,18 @@ public class DlmsClassRegister extends DlmsClass {
 	 * @param obis the object obis
 	 */
 	public DlmsClassRegister(Obis obis) {
-		super(CLASS_ID, obis);
-		attValue = new LnDescriptor(CLASS_ID, 2, obis);
-		attScalarUnit = new LnDescriptor(CLASS_ID, 3, obis);
-		mtdReset = new LnDescriptor(CLASS_ID, 1, obis);
+		attObis = new LnDescriptor(DlmsClass.REGISTER.id, obis, 1);
+		attValue = new LnDescriptor(DlmsClass.REGISTER.id, obis, 2);
+		attScalarUnit = new LnDescriptor(DlmsClass.REGISTER.id, obis, 3);
+		mtdReset = new LnDescriptor(DlmsClass.REGISTER.id, obis, 1);
+	}
+	
+	/**
+	 * Retrieves the OBIS attribute (index 1) of the object
+	 * @return LnDescritptor with index = 1
+	 */
+	public LnDescriptor attObis() {
+		return attObis;
 	}
 	
 	public LnDescriptor getAttValue() {

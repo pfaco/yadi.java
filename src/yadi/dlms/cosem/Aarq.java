@@ -29,10 +29,10 @@ import yadi.dlms.cosem.CosemParameters.SecurityType;
 
 class Aarq {
 
-	static byte[] request(CosemParameters params) throws IOException, DlmsException {
+	static byte[] request(CosemParameters params, CosemConnection connection) throws IOException, DlmsException {
 		final int BASE = Constants.Ber.CLASS_CONTEXT | Constants.Ber.CONSTRUCTED;
 		final byte[] applicationContextName  = generateApplicationContextName(params.referenceType, params.securityType);
-		params.connection.proposedContextName = applicationContextName;
+		connection.proposedContextName = applicationContextName;
 		ByteArrayOutputStream data = new ByteArrayOutputStream();
 		
 		//TODO
@@ -67,11 +67,11 @@ class Aarq {
 				data.write(params.llsHlsSecret.length);
 				data.write(params.llsHlsSecret);
 			} else if (params.authenticationType != AuthenticationType.PUBLIC) {
-				params.connection.challengeClientToServer = Security.generateChallanger(params);
-				data.write(params.connection.challengeClientToServer.length+2);
+				connection.challengeClientToServer = Security.generateChallanger(params);
+				data.write(connection.challengeClientToServer.length+2);
 				data.write(Constants.Ber.CLASS_CONTEXT);
-				data.write(params.connection.challengeClientToServer.length);
-				data.write(params.connection.challengeClientToServer);
+				data.write(connection.challengeClientToServer.length);
+				data.write(connection.challengeClientToServer);
 			}
 		}
 		data.write(Constants.Ber.CONTEXT_CONSTRUCTED | Constants.AarqApdu.USER_INFORMATION);

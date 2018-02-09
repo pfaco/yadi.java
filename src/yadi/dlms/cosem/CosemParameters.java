@@ -101,7 +101,7 @@ public class CosemParameters {
 		UNCONFIRMED, CONFIRMED;
 	}
 	
-	Connection connection = new Connection();
+	///Connection connection = new Connection();
 	AuthenticationType authenticationType = AuthenticationType.PUBLIC;
 	SecurityType securityType = SecurityType.NONE;
 	ReferenceType referenceType = ReferenceType.LOGICAL_NAME;

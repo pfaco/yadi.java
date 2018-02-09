@@ -33,11 +33,27 @@ public class DlmsClient {
 	/**
 	 * Creates a new Dlms instance, a facade to facilitate the usage of the Cosem, LinkLayer and PhyLayer.
 	 * @param link link layer object
-	 * @param settings cosem settings
+	 */
+	public DlmsClient(LinkLayer link) {
+		this(link, new CosemParameters());
+	}
+	
+	/**
+	 * Creates a new Dlms instance, a facade to facilitate the usage of the Cosem, LinkLayer and PhyLayer.
+	 * @param link link layer object
+	 * @param params cosem parameters
 	 */
 	public DlmsClient(LinkLayer link, CosemParameters params) {
 		this.link = link;
 		this.cosem = new Cosem(params);
+	}
+	
+	/**
+	 * Retrieves the parameters object
+	 * @return the CosemParameters associated to this DlmsClient
+	 */
+	public CosemParameters getParameters() {
+		return cosem.getParameters();
 	}
 	
 	/**

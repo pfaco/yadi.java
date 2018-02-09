@@ -17,26 +17,48 @@
  */
 package yadi.dlms.classes;
 
-import yadi.dlms.Obis;
-import yadi.dlms.cosem.LnDescriptor;
-
-class DlmsClass {
-	private final LnDescriptor attObis;
+public enum DlmsClass {
+	DATA(1),
+	REGISTER(3),
+	EXTENDED_REGISTER(4),
+	DEMAND_REGISTER(5),
+	REGISTER_ACTIVATION(6),
+	PROFILE_GENERIC(7),
+	CLOCK(8),
+	SCRIPT_TABLE(9),
+	SCHEDULE(10),
+	SPECIAL_DAYS_TABLE(11),
+	ASSOCIATION_SN(12),
+	ASSOCIATION_LN(15),
+	SAP_ASSIGNMENT(17),
+	IMAGE_TRANSFER(18),
+	IEC_LOCAL_PORT_SETUP(19),
+	ACTIVITY_CALENDAR(20),
+	REGISTER_MONITOR(21),
+	SINGLE_ACTION_SCHEDULE(22),
+	IEC_HDLC_SETUP(23),
+	UTILITY_TABLES(26),
+	DATA_PROTECTION(30),
+	PUSH_SETUP(40),
+	REGISTER_TABLE(61),
+	COMPACT_DATA(62),
+	STATUS_MAPPING(63),
+	SECURITY_SETUP(64),
+	PARAMETER_MONITOR(65),
+	SENSOR_MANAGER(67),
+	ARBITRATOR(68),
+	DISCONNECT_CONTROL(70),
+	LIMITER(71),
+	ACCOUNT(111),
+	CREDIT(112),
+	CHARGE(113),
+	TOKEN_GATEWAY(115),
+	FUNCTION_CONTROL(122),
+	ARRAY_MANAGER(123);
 	
-	/**
-	 * Creates an object of DlmsClass
-	 * @param classId the id of the class
-	 * @param obis the obis of the object
-	 */
-	public DlmsClass(int classId, Obis obis) {
-		attObis = new LnDescriptor(classId, 1, obis);
-	}
+	public final int id;
 	
-	/**
-	 * Gets the attribute 1 (OBIS) of the class
-	 * @return LnDescriptor with index = 1
-	 */
-	public LnDescriptor attObis() {
-		return attObis;
+	private DlmsClass(int id) {
+		this.id = id;
 	}
 }

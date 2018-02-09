@@ -20,8 +20,8 @@ package yadi.dlms.classes;
 import yadi.dlms.Obis;
 import yadi.dlms.cosem.LnDescriptor;
 
-public class DlmsClassData extends DlmsClass {
-	private static final int CLASS_ID = 1;
+public class DlmsClassData {
+	private final LnDescriptor attObis;
 	private final LnDescriptor attValue;
 	
 	/**
@@ -29,9 +29,11 @@ public class DlmsClassData extends DlmsClass {
 	 * @param obis the object obis
 	 */
 	public DlmsClassData(Obis obis) {
-		super(CLASS_ID, obis);
-		attValue = new LnDescriptor(CLASS_ID, 2, obis);
+		attObis = new LnDescriptor(DlmsClass.DATA.id, obis, 1);
+		attValue = new LnDescriptor(DlmsClass.DATA.id, obis, 2);
 	}
+	
+	 
 	
 	/**
 	 * Retrieves the value attribute (index 2) of the object

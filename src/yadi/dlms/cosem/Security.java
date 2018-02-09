@@ -101,22 +101,22 @@ class Security {
 		}
 	}
 	
-	static byte[] reverseAuthenticatedEncryption(CosemParameters params, byte[] data) throws DlmsException {
+	static byte[] reverseAuthenticatedEncryption(CosemParameters params, CosemConnection connection, byte[] data) throws DlmsException {
 		switch (data[0] & 0xff) {
 		case SC_AUTHENTICATION:
-			params.connection.serverInvocationCounter = ByteBuffer.allocate(4).put(Arrays.copyOfRange(data, 1, 5)).getInt(0);
-			return aesGcmReverse(new byte[0], Arrays.copyOfRange(data, 5, data.length), params);
+			connection.serverInvocationCounter = ByteBuffer.allocate(4).put(Arrays.copyOfRange(data, 1, 5)).getInt(0);
+			return aesGcmReverse(new byte[0], Arrays.copyOfRange(data, 5, data.length), params, connection);
 			
 		case SC_AUTHENTICATION_ENCRYPTION:
 			byte[] authData = new byte[params.ak.length + 1];
 			authData[0] = SC_AUTHENTICATION_ENCRYPTION;
 			System.arraycopy(params.ak, 0, authData, 1, params.ak.length);
-			params.connection.serverInvocationCounter = ByteBuffer.allocate(4).put(Arrays.copyOfRange(data, 1, 5)).getInt(0);
-			return aesGcmReverse(Arrays.copyOfRange(data, 5, data.length), authData, params);
+			connection.serverInvocationCounter = ByteBuffer.allocate(4).put(Arrays.copyOfRange(data, 1, 5)).getInt(0);
+			return aesGcmReverse(Arrays.copyOfRange(data, 5, data.length), authData, params, connection);
 			
 		case SC_ENCRYPTION:
-			params.connection.serverInvocationCounter = ByteBuffer.allocate(4).put(Arrays.copyOfRange(data, 1, 5)).getInt(0);
-			return aesGcmReverse(Arrays.copyOfRange(data, 5, data.length), new byte[0], params);
+			connection.serverInvocationCounter = ByteBuffer.allocate(4).put(Arrays.copyOfRange(data, 1, 5)).getInt(0);
+			return aesGcmReverse(Arrays.copyOfRange(data, 5, data.length), new byte[0], params, connection);
 			
 		default:
 			return data;
@@ -144,9 +144,9 @@ class Security {
 		throw new DlmsException(DlmsExceptionReason.INTERNAL_ERROR);
 	}
 	
-	static byte[] aesGcmReverse(byte[] encrypted, byte[] authData, CosemParameters params) throws DlmsException {
+	static byte[] aesGcmReverse(byte[] encrypted, byte[] authData, CosemParameters params, CosemConnection connection) throws DlmsException {
 		try {
-			byte[] iv = getIv(params.connection.serverSysTitle, params.connection.serverInvocationCounter);
+			byte[] iv = getIv(connection.serverSysTitle, connection.serverInvocationCounter);
 			cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(params.ek, "AES"), new GCMParameterSpec(12 * Byte.SIZE, iv));
 			cipher.updateAAD(authData);
 			return cipher.doFinal(encrypted);
@@ -178,23 +178,23 @@ class Security {
 		return random;
 	}
 	
-	static byte[] processChallanger(CosemParameters params) throws DlmsException {
+	static byte[] processChallanger(CosemParameters params, CosemConnection connection) throws DlmsException {
 		try {
 			switch (params.authenticationType) {
 			case PUBLIC:
 			case LLS:
 				throw new IllegalStateException();
 			case HLS:
-				return Security.aes128(params.connection.challengeServerToClient, params.llsHlsSecret);
+				return Security.aes128(connection.challengeServerToClient, params.llsHlsSecret);
 			case HLS_MD5:
-				return Security.md5(params.connection.challengeServerToClient, params.llsHlsSecret);
+				return Security.md5(connection.challengeServerToClient, params.llsHlsSecret);
 			case HLS_SHA1:
-				return Security.sha1(params.connection.challengeServerToClient, params.llsHlsSecret);
+				return Security.sha1(connection.challengeServerToClient, params.llsHlsSecret);
 			case HLS_GMAC:
 				ByteArrayOutputStream data = new ByteArrayOutputStream();
 				data.write(SC_AUTHENTICATION);
 				data.write(params.ak);
-				data.write(params.connection.challengeServerToClient);
+				data.write(connection.challengeServerToClient);
 				ByteArrayOutputStream stream = new ByteArrayOutputStream();
 				stream.write(SC_AUTHENTICATION);
 				stream.write(ByteBuffer.allocate(4).putInt(params.invocationCounter+1).array());
@@ -208,7 +208,7 @@ class Security {
 		}
 	}
 	
-	static boolean verifyChallenger(CosemParameters params, byte[] data) throws DlmsException {
+	static boolean verifyChallenger(CosemParameters params, CosemConnection connection, byte[] data) throws DlmsException {
 		if (data == null || data.length == 0) {
 			return false;
 		}
@@ -219,13 +219,13 @@ class Security {
 			case LLS:
 				throw new IllegalStateException();
 			case HLS:
-				calculated = Security.aes128(params.connection.challengeClientToServer, params.llsHlsSecret);
+				calculated = Security.aes128(connection.challengeClientToServer, params.llsHlsSecret);
 				break;
 			case HLS_MD5:
-				calculated = Security.md5(params.connection.challengeClientToServer, params.llsHlsSecret);
+				calculated = Security.md5(connection.challengeClientToServer, params.llsHlsSecret);
 				break;
 			case HLS_SHA1:
-				calculated = Security.sha1(params.connection.challengeClientToServer, params.llsHlsSecret);
+				calculated = Security.sha1(connection.challengeClientToServer, params.llsHlsSecret);
 				break;
 			case HLS_GMAC:
 				if (data[0] != SC_AUTHENTICATION) {
@@ -234,12 +234,12 @@ class Security {
 				ByteArrayOutputStream stream = new ByteArrayOutputStream();
 				stream.write(SC_AUTHENTICATION);
 				stream.write(params.ak);
-				stream.write(params.connection.challengeClientToServer);
-				params.connection.serverInvocationCounter = ByteBuffer.allocate(4).put(Arrays.copyOfRange(data, 1, 5)).getInt(0);
+				stream.write(connection.challengeClientToServer);
+				connection.serverInvocationCounter = ByteBuffer.allocate(4).put(Arrays.copyOfRange(data, 1, 5)).getInt(0);
 				data = Arrays.copyOfRange(data, 5, data.length);
 				CosemParameters cosemParams = new CosemParameters();
-				cosemParams.setSystemTitle(params.connection.serverSysTitle);
-				cosemParams.setInvocationCounter(params.connection.serverInvocationCounter-1);
+				cosemParams.setSystemTitle(connection.serverSysTitle);
+				cosemParams.setInvocationCounter(connection.serverInvocationCounter-1);
 				cosemParams.setEk(params.ek);
 				calculated = Security.aesGcm(new byte[0], stream.toByteArray(), cosemParams);
 				break;

@@ -27,7 +27,7 @@ import yadi.dlms.cosem.CosemParameters.SecurityType;
 
 class Aare {
 
-	static void parseResponse(CosemParameters params, byte[] data) throws DlmsException {
+	static void parseResponse(CosemParameters params, CosemConnection connection, byte[] data) throws DlmsException {
 
 		if (data == null || data.length < 4) {
 			throw new DlmsException(DlmsExceptionReason.MALFORMED_AARE_FRAME);
@@ -46,7 +46,7 @@ class Aare {
 		}
 		
 		int offset = (data[3] & 0xFF) + 4;
-		parseContextName(Arrays.copyOfRange(data, 4, offset), params.connection.proposedContextName);
+		parseContextName(Arrays.copyOfRange(data, 4, offset), connection.proposedContextName);
 		if ((data[offset++] & 0xFF) != (Constants.Ber.CONTEXT_CONSTRUCTED | Constants.AareApdu.RESULT)) {
 			throw new DlmsException(DlmsExceptionReason.MALFORMED_AARE_FRAME);
 		}
@@ -77,7 +77,7 @@ class Aare {
 				if (value[0] != Constants.Ber.OCTET_STRING || value[1] != value.length-2) {
 					throw new DlmsException(DlmsExceptionReason.MALFORMED_AARE_FRAME);
 				}
-				params.connection.serverSysTitle = Arrays.copyOfRange(value, 2, value.length);
+				connection.serverSysTitle = Arrays.copyOfRange(value, 2, value.length);
 			}
 			else if (tag == (Constants.Ber.CLASS_CONTEXT | Constants.AareApdu.RESPONDER_ACSE_REQUIREMENTS)) {
 				//System.out.println("Resp ACSE Req: "+printBytes(value));
@@ -89,10 +89,10 @@ class Aare {
 				if ( (value[0]&0xFF) != 0x80 || value[1] != value.length-2) {
 					throw new DlmsException(DlmsExceptionReason.MALFORMED_AARE_FRAME);
 				}
-				params.connection.challengeServerToClient = Arrays.copyOfRange(value, 2, value.length);
+				connection.challengeServerToClient = Arrays.copyOfRange(value, 2, value.length);
 			}
 			else if (tag == (Constants.Ber.CONTEXT_CONSTRUCTED | Constants.AareApdu.USER_INFORMATION)) {
-				parseUserInfo(value, params);
+				parseUserInfo(value, params, connection);
 			}
 		}
 	}
@@ -144,7 +144,7 @@ class Aare {
 		}
 	}
 
-	private static void parseUserInfo(byte[] data, CosemParameters params) throws DlmsException {
+	private static void parseUserInfo(byte[] data, CosemParameters params, CosemConnection connection) throws DlmsException {
 		if (data == null || data.length < 16) {
 			throw new DlmsException(DlmsExceptionReason.MALFORMED_AARE_FRAME);
 		}
@@ -163,7 +163,7 @@ class Aare {
 			}
 			byte[] encrypted = new byte[data[3] & 0xFF];
 			System.arraycopy(data, 4, encrypted, 0, encrypted.length);
-			data = Security.reverseAuthenticatedEncryption(params, encrypted);
+			data = Security.reverseAuthenticatedEncryption(params, connection, encrypted);
 		} else {
 			data = Arrays.copyOfRange(data, 2, data.length);
 		}
@@ -179,7 +179,7 @@ class Aare {
 		if (data[4] != 0x1F || data[5] != 0x04 || data[6] != 0x00) {
 			throw new DlmsException(DlmsExceptionReason.MALFORMED_AARE_FRAME);
 		}
-		params.connection.conformanceBlock = Arrays.copyOfRange(data, 7, 10);
+		connection.conformanceBlock = Arrays.copyOfRange(data, 7, 10);
 		int vaa = ByteBuffer.allocate(2).put(Arrays.copyOfRange(data, 12, data.length)).getShort(0);
 		if (params.referenceType == ReferenceType.LOGICAL_NAME && vaa != 0x0007) {
 			throw new DlmsException(DlmsExceptionReason.MALFORMED_AARE_FRAME);
@@ -187,7 +187,7 @@ class Aare {
 		if (params.referenceType == ReferenceType.SHORT_NAME && vaa != 0xFA00) {
 			throw new DlmsException(DlmsExceptionReason.MALFORMED_AARE_FRAME);
 		}
-		params.connection.maxPduSize = ((data[10] & 0xFF) << 8) | (data[11] & 0xFF);
+		connection.maxPduSize = ((data[10] & 0xFF) << 8) | (data[11] & 0xFF);
 	}
 	
 	private static DlmsExceptionReason getDiagnosticReason(int diagnostic) {

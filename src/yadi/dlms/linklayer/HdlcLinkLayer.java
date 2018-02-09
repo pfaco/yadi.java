@@ -78,12 +78,27 @@ public class HdlcLinkLayer implements LinkLayer {
 	
 	/**
 	 * Creates a HdlcLinkLayer object
+	 */
+	public HdlcLinkLayer() {
+		this(new HdlcParameters());
+	}
+	
+	/**
+	 * Creates a HdlcLinkLayer object
 	 * @param params the HdlcParameters for this object
 	 */
 	public HdlcLinkLayer(HdlcParameters params) {
-		this.params = params;
+		this.params = new HdlcParameters();
 		this.stream = new ByteArrayOutputStream();
 		this.connection = new HdlcConnection();
+	}
+	
+	/**
+	 * Retrieves the parameters object
+	 * @return the HdlcParameters associated to this HdlcLinkLayer
+	 */
+	public HdlcParameters getParameters() {
+		return this.params;
 	}
 
 	/**

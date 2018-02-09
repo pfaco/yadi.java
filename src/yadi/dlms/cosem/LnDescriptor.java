@@ -35,7 +35,7 @@ public class LnDescriptor {
 	 * @param index the index of the attribute/method to be accessed
 	 * @param obis the obis of the object
 	 */
-	public LnDescriptor(int classId, int index, Obis obis) {
+	public LnDescriptor(int classId, Obis obis, int index) {
 		this.obis = obis.getValue();
 		this.classId = ByteBuffer.allocate(2).putShort((short)classId).array();
 		this.index = (short)index;
@@ -48,8 +48,8 @@ public class LnDescriptor {
 	 * @param obis the obis of the object
 	 * @param requestData the data to be used in the request
 	 */
-	public LnDescriptor(int classId, int index, Obis obis, byte[] requestData) {
-		this(classId, index, obis);
+	public LnDescriptor(int classId, Obis obis, int index, byte[] requestData) {
+		this(classId, obis, index);
 		setRequestData(requestData);
 	}
 

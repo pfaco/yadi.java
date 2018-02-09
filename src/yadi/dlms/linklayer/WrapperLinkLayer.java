@@ -32,6 +32,13 @@ public class WrapperLinkLayer implements LinkLayer {
 	
 	/**
 	 * Creates a WrapperLinkLayer object
+	 */
+	public WrapperLinkLayer() {
+		this (new WrapperParameters());
+	}
+	
+	/**
+	 * Creates a WrapperLinkLayer object
 	 * @param params the WrapperParameters for this object
 	 */
 	public WrapperLinkLayer(WrapperParameters params) {

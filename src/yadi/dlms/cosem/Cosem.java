@@ -26,6 +26,7 @@ import java.util.Arrays;
 import yadi.dlms.DlmsException;
 import yadi.dlms.Obis;
 import yadi.dlms.DlmsException.DlmsExceptionReason;
+import yadi.dlms.classes.DlmsClass;
 import yadi.dlms.cosem.CosemParameters.AuthenticationType;
 import yadi.dlms.cosem.CosemParameters.SecurityType;
 
@@ -36,14 +37,27 @@ public class Cosem {
 	}
 	
 	private final CosemParameters params;
+	private final CosemConnection connection;
 	private ConnectionState state = ConnectionState.DISCONNECTED;
 
+	/**
+	 * Creates a Cosem object
+	 */
+	public Cosem() {
+		this(new CosemParameters());
+	}
+	
 	/**
 	 * Creates a Cosem object
 	 * @param params CosemParameters for this Cosem object
 	 */
 	public Cosem(CosemParameters params) {
 		this.params = params;
+		this.connection = new CosemConnection();
+	}
+	
+	public CosemParameters getParameters() {
+		return params;
 	}
 	
 	/**
@@ -63,11 +77,11 @@ public class Cosem {
 		try {
 			switch (state) {
 			case DISCONNECTED:
-				params.connection.reset();
-				return Aarq.request(params);
+				connection.reset();
+				return Aarq.request(params, connection);
 			case CONNECTED:
-				LnDescriptor att = new LnDescriptor(15, 1, new Obis(0, 0, 40, 0, 0, 255));
-				byte[] data = Security.processChallanger(params);
+				LnDescriptor att = new LnDescriptor(DlmsClass.ASSOCIATION_LN.id, new Obis("0.0.40.0.0.255"), 1);
+				byte[] data = Security.processChallanger(params, connection);
 				ByteArrayOutputStream stream = new ByteArrayOutputStream();
 				stream.write(Constants.DataType.OCTET_STRING);
 				stream.write(data.length);
@@ -93,11 +107,11 @@ public class Cosem {
 	public boolean parseConnectionResponse(byte[] data) throws DlmsException {
 		switch (state) {
 		case DISCONNECTED:
-			Aare.parseResponse(params, data);
+			Aare.parseResponse(params, connection, data);
 			state = ConnectionState.CONNECTED;
 			return params.authenticationType == AuthenticationType.PUBLIC || params.authenticationType == AuthenticationType.LLS;
 		case CONNECTED:
-			LnDescriptor att = new LnDescriptor(15, 1, new Obis(0, 0, 40, 0, 0, 255));
+			LnDescriptor att = new LnDescriptor(DlmsClass.ASSOCIATION_LN.id, new Obis("0.0.40.0.0.255"), 1);
 			parseActionResponse(att, data);
 			byte[] receivedData = att.getResponseData();
 			if (receivedData == null || receivedData.length < 3 || receivedData[0] != Constants.DataType.OCTET_STRING) {
@@ -106,7 +120,7 @@ public class Cosem {
 			if (receivedData[1] != receivedData.length-2) {
 				throw new DlmsException(DlmsExceptionReason.CONNECTION_REJECTED);
 			}
-			if (!Security.verifyChallenger(params, Arrays.copyOfRange(receivedData, 2, receivedData.length))) {
+			if (!Security.verifyChallenger(params, connection, Arrays.copyOfRange(receivedData, 2, receivedData.length))) {
 				throw new DlmsException(DlmsExceptionReason.FAIL_TO_AUTHENTICATE_SERVER);
 			}
 			state = ConnectionState.AUTHENTICATED;
@@ -128,10 +142,10 @@ public class Cosem {
 		try {
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();
 			stream.write(Constants.xDlmsApdu.NoCiphering.GET_REQUEST);
-			stream.write(params.connection.datablock.blockNum == 0 ? 1 : 2);
+			stream.write(connection.datablock.blockNum == 0 ? 1 : 2);
 			stream.write(params.priority | params.serviceClass | Constants.INVOKE_ID);
-			if (params.connection.datablock.blockNum != 0) {
-				stream.write(ByteBuffer.allocate(4).putInt(params.connection.datablock.blockNum).array());
+			if (connection.datablock.blockNum != 0) {
+				stream.write(ByteBuffer.allocate(4).putInt(connection.datablock.blockNum).array());
 			} else {
 				stream.write(att.getClassId());
 				stream.write(att.getObis());
@@ -208,24 +222,24 @@ public class Cosem {
 			
 			if (data[0] == Constants.GetResponse.NORMAL) {
 				verifyDataAccessResult(data[2]);
-				params.connection.datablock.lastBlock = true;
+				connection.datablock.lastBlock = true;
 				data = Arrays.copyOfRange(data, 3, data.length);
 			} else if (data[0] == Constants.GetResponse.DATA_BLOCK) {
 				if (data.length < 10 || data[7] != 0) { //TODO only supports raw-data for now
 					throw new DlmsException(DlmsExceptionReason.RECEIVED_INVALID_GET_RESPONSE);
 				}
-				params.connection.datablock.lastBlock = data[2] != 0;
-				params.connection.datablock.blockNum = ByteBuffer.allocate(4).put(data,3,4).getInt(0);
+				connection.datablock.lastBlock = data[2] != 0;
+				connection.datablock.blockNum = ByteBuffer.allocate(4).put(data,3,4).getInt(0);
 				data = getPayload(data, 8); 
 			} else {
 				throw new DlmsException(DlmsExceptionReason.RECEIVED_INVALID_GET_RESPONSE);
 			}
 			
-			params.connection.datablock.data.write(data);
+			connection.datablock.data.write(data);
 			
-			if (params.connection.datablock.lastBlock) {
-				att.setResponseData(params.connection.datablock.data.toByteArray());
-				params.connection.datablock.reset();
+			if (connection.datablock.lastBlock) {
+				att.setResponseData(connection.datablock.data.toByteArray());
+				connection.datablock.reset();
 				return true;
 			}
 			
@@ -332,7 +346,7 @@ public class Cosem {
 				throw new DlmsException(DlmsExceptionReason.RECEIVED_INVALID_COMMAND_ID);
 			}
 			data = getPayload(data, 1);
-			data = Security.reverseAuthenticatedEncryption(params, data);
+			data = Security.reverseAuthenticatedEncryption(params, connection, data);
 		}
 		if ( (data[0] & 0xFF) != cmdNoCipher) {
 			throw new DlmsException(DlmsExceptionReason.RECEIVED_INVALID_COMMAND_ID);
