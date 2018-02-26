@@ -17,7 +17,12 @@ YADI (Yet Another DLMS implementation) is a library for communication with meter
 
 ## Changelog 
 
-### Version 0.0.2a (2018.Fev.03)
+
+### Version 0.0.3a (2018.Feb.05)
+Added tests
+Solved bugs related to HDLC addressing
+
+### Version 0.0.2a (2018.Feb.03)
 Improved the documentation (javadoc) in the source code
 
 ### Version 0.0.1a (2018.Feb.03)
