@@ -169,13 +169,53 @@ public class Cosem {
 		try {
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();
 			stream.write(Constants.xDlmsApdu.NoCiphering.SET_REQUEST);
-			stream.write(1);
-			stream.write(params.priority | params.serviceClass | Constants.INVOKE_ID);
-			stream.write(att.getClassId());
-			stream.write(att.getObis());
-			stream.write(att.getIndex());
-			stream.write(0);
-			stream.write(att.getRequestData());
+			byte[] data = att.getRequestData();
+			if (data.length > (connection.maxPduSize - 50)) {
+				if (connection.datablock.nextBlockNum == 1) {
+					connection.datablock.setData(data, connection.maxPduSize - 50);
+					//Set-Request-With-First-Datablock
+					stream.write(2);
+					stream.write(params.priority | params.serviceClass | Constants.INVOKE_ID);
+					stream.write(att.getClassId());
+					stream.write(att.getObis());
+					stream.write(att.getIndex());
+					stream.write(0);
+					stream.write(0);
+					stream.write(connection.datablock.getNextBlockNum());
+					byte[] blockdata = connection.datablock.getNextBlock();
+					if (blockdata.length > 128) {
+						stream.write(0x81);
+					}
+					stream.write(blockdata.length);
+					stream.write(blockdata);
+				} else {
+					//Set-Request-With-Datablock
+					stream.write(3);
+					stream.write(params.priority | params.serviceClass | Constants.INVOKE_ID);
+					if (connection.datablock.nextIsLast()) {
+						stream.write(1);
+					} else {
+						stream.write(0);
+					}
+					stream.write(connection.datablock.getNextBlockNum());
+					byte[] blockdata = connection.datablock.getNextBlock();
+					if (blockdata.length > 128) {
+						stream.write(0x81);
+					}
+					stream.write(blockdata.length);
+					stream.write(blockdata);
+				}
+			} else {
+				//Set-Request-Normal
+				stream.write(1);
+				stream.write(params.priority | params.serviceClass | Constants.INVOKE_ID);
+				stream.write(att.getClassId());
+				stream.write(att.getObis());
+				stream.write(att.getIndex());
+				stream.write(0);
+				stream.write(att.getRequestData());
+			}
+			
 			return packFrame(Constants.xDlmsApdu.GlobalCiphering.SET_REQUEST, stream.toByteArray());
 		} catch (IOException e) {
 			throw new DlmsException(DlmsExceptionReason.INTERNAL_ERROR);
@@ -265,9 +305,25 @@ public class Cosem {
 		
 		if (data[0] == Constants.SetResponse.NORMAL) {
 			verifyDataAccessResult(data[2]);
+			return true;
+		} else if (data[0] == Constants.SetResponse.DATA_BLOCK) {
+			if (data.length < 6) {
+				throw new DlmsException(DlmsExceptionReason.RECEIVED_INVALID_SET_RESPONSE);
+			}
+			connection.datablock.ackBlock(ByteBuffer.allocate(4).put(data,2,4).getInt(0));
+			return connection.datablock.nextIsLast();
+		} else if (data[0] == Constants.SetResponse.LAST_DATA_BLOCK) {
+			if (data.length < 7) {
+				throw new DlmsException(DlmsExceptionReason.RECEIVED_INVALID_SET_RESPONSE);
+			}
+			if (ByteBuffer.allocate(4).put(data,3,4).getInt(0) != connection.datablock.nextBlockNum) {
+				throw new DlmsException(DlmsExceptionReason.RECEIVED_INVALID_SET_RESPONSE);
+			}
+			connection.datablock.ackBlock(ByteBuffer.allocate(4).put(data,3,4).getInt(0));
+			verifyDataAccessResult(data[2]);
+			return true;
 		}
-
-		return true;
+		throw new DlmsException(DlmsExceptionReason.RECEIVED_INVALID_SET_RESPONSE);
 	}
 
 	/**

@@ -154,10 +154,22 @@ public class DlmsParser {
 		}
 	}
 	
-	private static byte[] getPayload(DlmsType type, byte[] data) {
+	public static byte[] getPayload(DlmsType type, byte[] data) {
 		int offset = type.size == 0 ? getOffset(data) : 1;
 		int size = type.size == 0 ? getSize(data) : type.size;
 		return Arrays.copyOfRange(data, offset, offset+size);
+	}
+	
+	public static byte[] pack(DlmsType type, byte[] data) {
+		int size = type.size == 0 ? data.length : type.size; //TODO size > 1 byte
+		int offset = type.size == 0 ? 1 : 0;
+		byte[] retval = new byte[data.length + 1 + offset];
+		retval[0] = type.tag;
+		if (offset != 0) {
+			retval[1] = (byte)data.length;
+		}
+		System.arraycopy(data, 0, retval, offset+1, data.length);
+		return retval;
 	}
 
 	private static String getStringValue(DlmsType type, byte[] payload) throws DlmsException {
@@ -209,6 +221,44 @@ public class DlmsParser {
 		}
 		throw new DlmsException(DlmsExceptionReason.NO_SUCH_TYPE);
 	}
+	
+	public static byte[] getByteValue(DlmsType type, String value) throws DlmsException {
+		switch (type) {
+		case ARRAY:
+		case BCD:
+		case BITSTRING:
+		case BOOLEAN:
+		case ENUM:
+		case OCTET_STRING:
+		case STRUCTURE:
+			return pack(type, hexStringToBytes(value));
+		case DATE:
+			//TODO return getDateStringValue(payload);
+		case DATE_TIME:
+			//TODO return getDateTimeStringValue(payload);
+		case FLOAT32:
+			//TODO return pack(type, );
+		case FLOAT64:
+			//TODO return Double.toString(ByteBuffer.wrap(payload).getDouble());
+		case INT16:
+		case INT32:
+		case INT64:
+		case INT8:
+			return pack(type, getIntegerBytes(type,value));
+		case STRING:
+			return pack(type, value.getBytes());
+		case TIME:
+			//TODO return getTimeStringValue(payload);
+		case UINT16:
+		case UINT32:
+		case UINT64:
+		case UINT8:
+			return pack(type, getIntegerBytes(type,value));
+		case UTF8_STRING:
+			return pack(type, value.getBytes());
+		}
+		throw new DlmsException(DlmsExceptionReason.NO_SUCH_TYPE);
+	}
 
 	private static int getOffset(byte[] data) {
 		if ((data[1] & 0xFF) <= 0x80) {
@@ -239,9 +289,24 @@ public class DlmsParser {
 	private static String bytesToHex(byte[] data) {
 		StringBuilder sb = new StringBuilder();
 		for (byte b : data) {
-			sb.append(String.format("%02X ", b));
+			sb.append(String.format("%02X", b));
 		}
 		return sb.toString();
+	}
+	
+	private static byte[] hexStringToBytes(String s) {
+		s = s.replaceAll(" ", "");
+	    int len = s.length();
+	    if((len & 0x01) != 0) {
+	    	s = "0"+s;
+	    	++len;
+	    }
+	    byte[] data = new byte[len / 2];
+	    for (int i = 0; i < len; i += 2) {
+	        data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+	                             + Character.digit(s.charAt(i+1), 16));
+	    }
+	    return data;
 	}
 	
 	private static String getTimeStringValue(byte[] bytes) {
@@ -289,6 +354,22 @@ public class DlmsParser {
 			return replacement;
 		}
 		return String.format("%02d", val & 0xFF);
+	}
+	
+	private static byte[] getIntegerBytes(DlmsType type, String str) {
+		byte[] bytes = new byte[type.size];
+		bytes[0] = type.tag;
+		int val = 0;
+		try {
+			val = Integer.parseInt(str);
+		} catch (Exception e) {
+			val = 0;
+		}
+		for(int i = 0; i < type.size; ++i) {
+			bytes[type.size-i] = (byte)(val & 0x00FF); 
+			val >>>= 8;
+		}
+		return bytes;
 	}
 
 }

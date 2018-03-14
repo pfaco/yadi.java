@@ -38,7 +38,7 @@ import yadi.dlms.DlmsException;
 import yadi.dlms.DlmsException.DlmsExceptionReason;
 import yadi.dlms.cosem.CosemParameters.SecurityType;
 
-class Security {
+public class Security {
 
 	private static final int SC_ENCRYPTION = 0x20;
 	private static final int SC_AUTHENTICATION = 0x10;
@@ -101,7 +101,7 @@ class Security {
 		}
 	}
 	
-	static byte[] reverseAuthenticatedEncryption(CosemParameters params, CosemConnection connection, byte[] data) throws DlmsException {
+	public static byte[] reverseAuthenticatedEncryption(CosemParameters params, CosemConnection connection, byte[] data) throws DlmsException {
 		switch (data[0] & 0xff) {
 		case SC_AUTHENTICATION:
 			connection.serverInvocationCounter = ByteBuffer.allocate(4).put(Arrays.copyOfRange(data, 1, 5)).getInt(0);

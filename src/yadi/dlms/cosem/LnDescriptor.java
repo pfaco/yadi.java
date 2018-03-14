@@ -36,9 +36,7 @@ public class LnDescriptor {
 	 * @param obis the obis of the object
 	 */
 	public LnDescriptor(int classId, Obis obis, int index) {
-		this.obis = obis.getValue();
-		this.classId = ByteBuffer.allocate(2).putShort((short)classId).array();
-		this.index = (short)index;
+		this(classId, obis.getValue(), index, new byte[0]);
 	}
 	
 	/**
@@ -49,7 +47,23 @@ public class LnDescriptor {
 	 * @param requestData the data to be used in the request
 	 */
 	public LnDescriptor(int classId, Obis obis, int index, byte[] requestData) {
-		this(classId, obis, index);
+		this(classId, obis.getValue(), index, requestData);
+	}
+
+	/**
+	 * Creates a descriptor for a DLMS object
+	 * @param classId the object class_id
+	 * @param index the index of the attribute/method to be accessed
+	 * @param obis the obis of the object
+	 * @param requestData the data to be used in the request
+	 */
+	public LnDescriptor(int classId, byte[] obis, int index, byte[] requestData) {
+		if (obis.length != 6) {
+			throw new IllegalArgumentException();
+		}
+		this.obis = obis;
+		this.classId = ByteBuffer.allocate(2).putShort((short)classId).array();
+		this.index = (short)index;
 		setRequestData(requestData);
 	}
 
