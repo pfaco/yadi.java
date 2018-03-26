@@ -4,8 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import app.HexString;
-
 /**
  * COSEM connection parameters
  */
