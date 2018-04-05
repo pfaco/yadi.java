@@ -192,7 +192,8 @@ public class Cosem {
 					//Set-Request-With-Datablock
 					stream.write(3);
 					stream.write(params.priority | params.serviceClass | Constants.INVOKE_ID);
-					if (connection.datablock.nextIsLast()) {
+					System.out.println("new2");
+					if (connection.datablock.thisIsLast()) {
 						stream.write(1);
 					} else {
 						stream.write(0);
@@ -311,7 +312,7 @@ public class Cosem {
 				throw new DlmsException(DlmsExceptionReason.RECEIVED_INVALID_SET_RESPONSE);
 			}
 			connection.datablock.ackBlock(ByteBuffer.allocate(4).put(data,2,4).getInt(0));
-			return connection.datablock.nextIsLast();
+			return connection.datablock.thisIsLast();
 		} else if (data[0] == Constants.SetResponse.LAST_DATA_BLOCK) {
 			if (data.length < 7) {
 				throw new DlmsException(DlmsExceptionReason.RECEIVED_INVALID_SET_RESPONSE);
