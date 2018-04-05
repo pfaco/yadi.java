@@ -192,7 +192,6 @@ public class Cosem {
 					//Set-Request-With-Datablock
 					stream.write(3);
 					stream.write(params.priority | params.serviceClass | Constants.INVOKE_ID);
-					System.out.println("new2");
 					if (connection.datablock.thisIsLast()) {
 						stream.write(1);
 					} else {
