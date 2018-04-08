@@ -26,7 +26,6 @@ import java.util.Arrays;
 import yadi.dlms.DlmsException;
 import yadi.dlms.Obis;
 import yadi.dlms.DlmsException.DlmsExceptionReason;
-import yadi.dlms.classes.DlmsClass;
 import yadi.dlms.cosem.CosemParameters.AuthenticationType;
 import yadi.dlms.cosem.CosemParameters.SecurityType;
 
@@ -80,7 +79,7 @@ public class Cosem {
 				connection.reset();
 				return Aarq.request(params, connection);
 			case CONNECTED:
-				LnDescriptor att = new LnDescriptor(DlmsClass.ASSOCIATION_LN.id, new Obis("0.0.40.0.0.255"), 1);
+				LnDescriptor att = new LnDescriptor(CosemClasses.ASSOCIATION_LN.id, new Obis("0.0.40.0.0.255"), 1);
 				byte[] data = Security.processChallanger(params, connection);
 				ByteArrayOutputStream stream = new ByteArrayOutputStream();
 				stream.write(Constants.DataType.OCTET_STRING);
@@ -111,7 +110,7 @@ public class Cosem {
 			state = ConnectionState.CONNECTED;
 			return params.authenticationType == AuthenticationType.PUBLIC || params.authenticationType == AuthenticationType.LLS;
 		case CONNECTED:
-			LnDescriptor att = new LnDescriptor(DlmsClass.ASSOCIATION_LN.id, new Obis("0.0.40.0.0.255"), 1);
+			LnDescriptor att = new LnDescriptor(CosemClasses.ASSOCIATION_LN.id, new Obis("0.0.40.0.0.255"), 1);
 			parseActionResponse(att, data);
 			byte[] receivedData = att.getResponseData();
 			if (receivedData == null || receivedData.length < 3 || receivedData[0] != Constants.DataType.OCTET_STRING) {

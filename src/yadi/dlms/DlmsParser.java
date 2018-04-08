@@ -171,6 +171,17 @@ public class DlmsParser {
 		System.arraycopy(data, 0, retval, offset+1, data.length);
 		return retval;
 	}
+	
+
+	public static int getInteger(byte[] responseData) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	
+	public static boolean getBoolean(byte[] responseData) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 	private static String getStringValue(DlmsType type, byte[] payload) throws DlmsException {
 		switch (type) {

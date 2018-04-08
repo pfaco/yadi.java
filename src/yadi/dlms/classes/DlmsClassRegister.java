@@ -18,6 +18,7 @@
 package yadi.dlms.classes;
 
 import yadi.dlms.Obis;
+import yadi.dlms.cosem.CosemClasses;
 import yadi.dlms.cosem.LnDescriptor;
 
 public class DlmsClassRegister {
@@ -31,10 +32,10 @@ public class DlmsClassRegister {
 	 * @param obis the object obis
 	 */
 	public DlmsClassRegister(Obis obis) {
-		attObis = new LnDescriptor(DlmsClass.REGISTER.id, obis, 1);
-		attValue = new LnDescriptor(DlmsClass.REGISTER.id, obis, 2);
-		attScalarUnit = new LnDescriptor(DlmsClass.REGISTER.id, obis, 3);
-		mtdReset = new LnDescriptor(DlmsClass.REGISTER.id, obis, 1);
+		attObis = new LnDescriptor(CosemClasses.REGISTER.id, obis, 1);
+		attValue = new LnDescriptor(CosemClasses.REGISTER.id, obis, 2);
+		attScalarUnit = new LnDescriptor(CosemClasses.REGISTER.id, obis, 3);
+		mtdReset = new LnDescriptor(CosemClasses.REGISTER.id, obis, 1);
 	}
 	
 	/**

@@ -15,9 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package yadi.dlms.classes;
+package yadi.dlms.cosem;
 
-public enum DlmsClass {
+public enum CosemClasses {
 	DATA(1),
 	REGISTER(3),
 	EXTENDED_REGISTER(4),
@@ -58,7 +58,7 @@ public enum DlmsClass {
 	
 	public final int id;
 	
-	private DlmsClass(int id) {
+	private CosemClasses(int id) {
 		this.id = id;
 	}
 }
