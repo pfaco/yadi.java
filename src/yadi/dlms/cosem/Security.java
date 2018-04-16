@@ -60,7 +60,7 @@ public class Security {
 		if (params.securityType == SecurityType.NONE) {
 			return data;
 		}
-		
+		int ivCounter = params.getInvocationCounter();
 		int sc = 0;
 		switch (params.securityType) {
 		case AUTHENTICATION:
@@ -69,7 +69,7 @@ public class Security {
 			authData[0] = SC_AUTHENTICATION;
 			System.arraycopy(params.ak, 0, authData, 1, params.ak.length);
 			System.arraycopy(data, 0, authData, params.ak.length+1, data.length);
-			byte[] mac = aesGcm(new byte[0], authData, params);
+			byte[] mac = aesGcm(new byte[0], authData, params, ivCounter);
 			byte[] data_ = new byte[data.length + mac.length];
 			System.arraycopy(data, 0, data_, 0, data.length);
 			System.arraycopy(mac, 0, data_, data.length, mac.length);
@@ -80,11 +80,11 @@ public class Security {
 			authData = new byte[params.ak.length + 1];
 			authData[0] = SC_AUTHENTICATION_ENCRYPTION;
 			System.arraycopy(params.ak, 0, authData, 1, params.ak.length);
-			data = aesGcm(data, authData, params);
+			data = aesGcm(data, authData, params, ivCounter);
 			break;
 		case ENCRYPTION:
 			sc = SC_ENCRYPTION;
-			data = aesGcm(data, new byte[0], params);
+			data = aesGcm(data, new byte[0], params, ivCounter);
 			break;
 		default:
 			throw new IllegalStateException();
@@ -93,7 +93,7 @@ public class Security {
 		try {
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();
 			stream.write(sc);
-			stream.write(ByteBuffer.allocate(4).putInt(params.getInvocationCounter()).array());
+			stream.write(ByteBuffer.allocate(4).putInt(ivCounter).array());
 			stream.write(data);
 			return stream.toByteArray();
 		} catch (IOException e) {
@@ -123,10 +123,9 @@ public class Security {
 		}
 	}
 	
-	static byte[] aesGcm(byte[] data, byte[] authData, CosemParameters params) throws DlmsException {
+	static byte[] aesGcm(byte[] data, byte[] authData, CosemParameters params, int ivCounter) throws DlmsException {
 		try {
-			params.incrementInvocationCounter();
-			byte[] iv = getIv(params.systemTitle, params.getInvocationCounter());
+			byte[] iv = getIv(params.systemTitle, ivCounter);
 			cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(params.ek, "AES"), new GCMParameterSpec(12 * Byte.SIZE, iv));
 			cipher.updateAAD(authData);
 			return cipher.doFinal(data);
@@ -191,14 +190,15 @@ public class Security {
 			case HLS_SHA1:
 				return Security.sha1(connection.challengeServerToClient, params.llsHlsSecret);
 			case HLS_GMAC:
+				int ivCounter = params.getInvocationCounter();
 				ByteArrayOutputStream data = new ByteArrayOutputStream();
 				data.write(SC_AUTHENTICATION);
 				data.write(params.ak);
 				data.write(connection.challengeServerToClient);
 				ByteArrayOutputStream stream = new ByteArrayOutputStream();
 				stream.write(SC_AUTHENTICATION);
-				stream.write(ByteBuffer.allocate(4).putInt(params.getInvocationCounter()+1).array());
-				stream.write(Security.aesGcm(new byte[0], data.toByteArray(), params));
+				stream.write(ByteBuffer.allocate(4).putInt(ivCounter).array());
+				stream.write(Security.aesGcm(new byte[0], data.toByteArray(), params, ivCounter));
 				return stream.toByteArray();
 			default:
 				throw new IllegalArgumentException();
@@ -231,6 +231,7 @@ public class Security {
 				if (data[0] != SC_AUTHENTICATION) {
 					return false;
 				}
+				
 				ByteArrayOutputStream stream = new ByteArrayOutputStream();
 				stream.write(SC_AUTHENTICATION);
 				stream.write(params.ak);
@@ -240,8 +241,9 @@ public class Security {
 				CosemParameters cosemParams = new CosemParameters();
 				cosemParams.setSystemTitle(connection.serverSysTitle);
 				cosemParams.setInvocationCounter(connection.serverInvocationCounter-1);
+				int ivCounter = cosemParams.getInvocationCounter();
 				cosemParams.setEk(params.ek);
-				calculated = Security.aesGcm(new byte[0], stream.toByteArray(), cosemParams);
+				calculated = Security.aesGcm(new byte[0], stream.toByteArray(), cosemParams, ivCounter);
 				break;
 			default:
 				throw new IllegalArgumentException();

@@ -137,14 +137,9 @@ public class CosemParameters {
 		CosemParameters.invocationCounter = counter;
 	}
 	
-	public void incrementInvocationCounter() {
-		synchronized(locker) {
-			CosemParameters.invocationCounter++;
-		}
-	}
-	
 	public int getInvocationCounter() {
 		synchronized(locker) {
+			CosemParameters.invocationCounter++;
 			return CosemParameters.invocationCounter;
 		}
 	}
