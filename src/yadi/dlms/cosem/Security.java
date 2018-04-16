@@ -43,6 +43,8 @@ public class Security {
 	private static final int SC_ENCRYPTION = 0x20;
 	private static final int SC_AUTHENTICATION = 0x10;
 	private static final int SC_AUTHENTICATION_ENCRYPTION = 0x30;
+	private static final Object cipherLocker = new Object();
+	private static final Object randomLocker = new Object();
 	private static Cipher cipher;
 	private static SecureRandom sr = new SecureRandom();
 	static {
@@ -126,9 +128,11 @@ public class Security {
 	static byte[] aesGcm(byte[] data, byte[] authData, CosemParameters params, int ivCounter) throws DlmsException {
 		try {
 			byte[] iv = getIv(params.systemTitle, ivCounter);
-			cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(params.ek, "AES"), new GCMParameterSpec(12 * Byte.SIZE, iv));
-			cipher.updateAAD(authData);
-			return cipher.doFinal(data);
+			synchronized(cipherLocker) {
+				cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(params.ek, "AES"), new GCMParameterSpec(12 * Byte.SIZE, iv));
+				cipher.updateAAD(authData);
+				return cipher.doFinal(data);
+			}
 		} catch (InvalidKeyException e) {
 			e.printStackTrace();
 		} catch (InvalidAlgorithmParameterException e) {
@@ -146,9 +150,11 @@ public class Security {
 	static byte[] aesGcmReverse(byte[] encrypted, byte[] authData, CosemParameters params, CosemConnection connection) throws DlmsException {
 		try {
 			byte[] iv = getIv(connection.serverSysTitle, connection.serverInvocationCounter);
-			cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(params.ek, "AES"), new GCMParameterSpec(12 * Byte.SIZE, iv));
-			cipher.updateAAD(authData);
-			return cipher.doFinal(encrypted);
+			synchronized(cipherLocker) {
+				cipher.init(Cipher.DECRYPT_MODE, new SecretKeySpec(params.ek, "AES"), new GCMParameterSpec(12 * Byte.SIZE, iv));
+				cipher.updateAAD(authData);
+				return cipher.doFinal(encrypted);
+			}
 		} catch (InvalidKeyException e) {
 			e.printStackTrace();
 		} catch (InvalidAlgorithmParameterException e) {
@@ -173,7 +179,9 @@ public class Security {
 
 	static byte[] generateChallanger(CosemParameters params) {
 		byte[] random = new byte[params.challengerSize];
-		sr.nextBytes(random);
+		synchronized(randomLocker) {
+			sr.nextBytes(random);
+		}
 		return random;
 	}
 	
