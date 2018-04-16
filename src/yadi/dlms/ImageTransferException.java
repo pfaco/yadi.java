@@ -6,7 +6,7 @@ public class ImageTransferException extends Exception {
 	public enum ImageTransferExceptionReason {
 		TRANSFER_DISABLED, 
 		INTERNAL_ERROR, 
-		INVALID_IMAGE_TO_ACTIVATE;
+		INVALID_IMAGE_TO_ACTIVATE, INVALID_BLOCK_SIZE;
 	}
 	
 	ImageTransferException(ImageTransferExceptionReason reason) {

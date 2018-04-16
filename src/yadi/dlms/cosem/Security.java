@@ -93,7 +93,7 @@ public class Security {
 		try {
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();
 			stream.write(sc);
-			stream.write(ByteBuffer.allocate(4).putInt(params.invocationCounter).array());
+			stream.write(ByteBuffer.allocate(4).putInt(params.getInvocationCounter()).array());
 			stream.write(data);
 			return stream.toByteArray();
 		} catch (IOException e) {
@@ -125,8 +125,8 @@ public class Security {
 	
 	static byte[] aesGcm(byte[] data, byte[] authData, CosemParameters params) throws DlmsException {
 		try {
-			params.invocationCounter++;
-			byte[] iv = getIv(params.systemTitle, params.invocationCounter);
+			params.incrementInvocationCounter();
+			byte[] iv = getIv(params.systemTitle, params.getInvocationCounter());
 			cipher.init(Cipher.ENCRYPT_MODE, new SecretKeySpec(params.ek, "AES"), new GCMParameterSpec(12 * Byte.SIZE, iv));
 			cipher.updateAAD(authData);
 			return cipher.doFinal(data);
@@ -197,7 +197,7 @@ public class Security {
 				data.write(connection.challengeServerToClient);
 				ByteArrayOutputStream stream = new ByteArrayOutputStream();
 				stream.write(SC_AUTHENTICATION);
-				stream.write(ByteBuffer.allocate(4).putInt(params.invocationCounter+1).array());
+				stream.write(ByteBuffer.allocate(4).putInt(params.getInvocationCounter()+1).array());
 				stream.write(Security.aesGcm(new byte[0], data.toByteArray(), params));
 				return stream.toByteArray();
 			default:

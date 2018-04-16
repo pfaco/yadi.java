@@ -106,7 +106,8 @@ public class CosemParameters {
 	SecurityType securityType = SecurityType.NONE;
 	ReferenceType referenceType = ReferenceType.LOGICAL_NAME;
 	
-	int invocationCounter = 0;
+	private static Object locker = new Object();
+	private static int invocationCounter = 0;
 	int challengerSize = 8;
 	int priority = Constants.PRIORITY_HIGH;
 	int serviceClass = Constants.SERVICE_CLASS_CONFIRMED;
@@ -133,7 +134,19 @@ public class CosemParameters {
 	 * @param counter - invocation counter value
 	 */
 	public void setInvocationCounter(int counter) {
-		this.invocationCounter = counter;
+		CosemParameters.invocationCounter = counter;
+	}
+	
+	public void incrementInvocationCounter() {
+		synchronized(locker) {
+			CosemParameters.invocationCounter++;
+		}
+	}
+	
+	public int getInvocationCounter() {
+		synchronized(locker) {
+			return CosemParameters.invocationCounter;
+		}
 	}
 	
 	/**

@@ -173,14 +173,24 @@ public class DlmsParser {
 	}
 	
 
-	public static int getInteger(byte[] responseData) {
-		// TODO Auto-generated method stub
-		return 0;
+	public static int getInteger(byte[] data) {
+		int val = 0;
+		for (int i = 1; i < data.length; ++i) {
+			val <<= 8;
+			val += (data[i] & 0xFF);
+		}
+		
+		return val;
 	}
 	
-	public static boolean getBoolean(byte[] responseData) {
-		// TODO Auto-generated method stub
-		return false;
+	public static boolean getBoolean(byte[] responseData) throws DlmsException {
+		if (responseData.length != 2) {
+			throw new DlmsException(DlmsExceptionReason.INVALID_DATA);
+		}
+		if (responseData[0] != DlmsType.BOOLEAN.tag) {
+			throw new DlmsException(DlmsExceptionReason.INVALID_DATA);
+		}
+		return 0 != responseData[1];
 	}
 
 	private static String getStringValue(DlmsType type, byte[] payload) throws DlmsException {

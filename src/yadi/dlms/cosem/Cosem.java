@@ -169,9 +169,9 @@ public class Cosem {
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();
 			stream.write(Constants.xDlmsApdu.NoCiphering.SET_REQUEST);
 			byte[] data = att.getRequestData();
-			if (data.length > (connection.maxPduSize - 50)) {
+			if (data.length > (connection.maxPduSize - 20)) {
 				if (connection.datablock.nextBlockNum == 1) {
-					connection.datablock.setData(data, connection.maxPduSize - 50);
+					connection.datablock.setData(data, connection.maxPduSize - 20);
 					//Set-Request-With-First-Datablock
 					stream.write(2);
 					stream.write(params.priority | params.serviceClass | Constants.INVOKE_ID);
@@ -310,7 +310,11 @@ public class Cosem {
 				throw new DlmsException(DlmsExceptionReason.RECEIVED_INVALID_SET_RESPONSE);
 			}
 			connection.datablock.ackBlock(ByteBuffer.allocate(4).put(data,2,4).getInt(0));
-			return connection.datablock.thisIsLast();
+			if (connection.datablock.thisIsLast()) {
+				connection.datablock.reset();
+				return true;
+			}
+			return false;
 		} else if (data[0] == Constants.SetResponse.LAST_DATA_BLOCK) {
 			if (data.length < 7) {
 				throw new DlmsException(DlmsExceptionReason.RECEIVED_INVALID_SET_RESPONSE);
