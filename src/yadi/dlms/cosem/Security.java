@@ -240,10 +240,8 @@ public class Security {
 				data = Arrays.copyOfRange(data, 5, data.length);
 				CosemParameters cosemParams = new CosemParameters();
 				cosemParams.setSystemTitle(connection.serverSysTitle);
-				cosemParams.setInvocationCounter(connection.serverInvocationCounter-1);
-				int ivCounter = cosemParams.getInvocationCounter();
 				cosemParams.setEk(params.ek);
-				calculated = Security.aesGcm(new byte[0], stream.toByteArray(), cosemParams, ivCounter);
+				calculated = Security.aesGcm(new byte[0], stream.toByteArray(), cosemParams, connection.serverInvocationCounter);
 				break;
 			default:
 				throw new IllegalArgumentException();
