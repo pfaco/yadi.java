@@ -417,8 +417,11 @@ public class Cosem {
 		if (size < 0x80) {
 			return new byte[]{(byte)size};
 		}
+		if (size <= 0xFF) {
+			return new byte[] {(byte)0x81, (byte)size};
+		}
 		if (size <= 65535) {
-			return new byte[]{(byte)0x81, (byte)(size >>> 8), (byte)size};
+			return new byte[]{(byte)0x82, (byte)(size >>> 8), (byte)size};
 		}
 		throw new InvalidParameterException();
 	}
