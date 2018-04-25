@@ -49,24 +49,23 @@ public class DlmsParser {
 		DlmsItem item = new DlmsItem(type, getString(data));
 		int numberOfItems = getNumberOfItems(type,data);
 		for (int i = 0; i < numberOfItems; ++i) {
-			data = getNextData(data);
-			parseItems(item, data);
+			data = parseItems(item, getNextData(data));
 		}
 		return item;
 	}
 
-	private static void parseItems(DlmsItem parent, byte[] data) throws DlmsException {
+	private static byte[] parseItems(DlmsItem parent, byte[] data) throws DlmsException {
 		if (data.length == 0) {
-			return;
+			return data;
 		}
 		DlmsType type = DlmsType.fromTag(data[0]);
 		DlmsItem item = new DlmsItem(type, getString(data));
 		parent.addChildren(item);
 		int numberOfItems = getNumberOfItems(type,data);
 		for (int i = 0; i < numberOfItems; ++i) {
-			data = getNextData(data);
-			parseItems(item, data);
+			data = parseItems(item, getNextData(data));
 		}
+		return data;
 	}
 	
 	private static byte[] getNextData(byte[] data) throws DlmsException {
@@ -222,7 +221,8 @@ public class DlmsParser {
 		case INT8:
 			return Integer.toString(payload[0]);
 		case OCTET_STRING:
-			return bytesToHex(payload);
+			//TODOreturn bytesToHex(payload);
+			return getDateTimeStringValue(payload);
 		case STRING:
 			return new String(payload, Charset.forName("US-ASCII"));
 		case STRUCTURE:
