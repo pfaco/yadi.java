@@ -83,7 +83,7 @@ public class WrapperLinkLayer implements LinkLayer {
 		for (byte b : data) {
 			stream.write(b);
 		}
-		phy.sendData(stream.toByteArray());
+		phy.sendData(stream.toByteArray());		
 	}
 
 	/**

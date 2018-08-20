@@ -75,10 +75,9 @@ public final class SerialPhyLayer implements PhyLayer {
 	 * @param enabled true if the RTS pin should be set, false if it should be cleared
 	 * @throws PhyLayerException
 	 */
-	public void setRTS(boolean enabled) throws PhyLayerException
-	{
+	public void setRTS(boolean enabled) throws PhyLayerException {
 		try {
-			serialPort.setRTS(true);
+			serialPort.setRTS(enabled);
 		} catch (SerialPortException e) {
 			throw new PhyLayerException(PhyLayerExceptionReason.INTERNAL_ERROR);
 		}
