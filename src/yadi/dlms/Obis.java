@@ -35,6 +35,18 @@ public class Obis {
 	}
 	
 	/**
+	 * Creates a OBIS using a byte array representation
+	 * @param value a byte array representing the OBIS in the form [A,B,C,D,E,F]
+	 */
+	public Obis(byte[] value) {
+		if (value.length != 6) {
+			throw new IllegalArgumentException();
+		}
+		this.value = new byte[6];
+		System.arraycopy(value, 0, this.value, 0, 6);
+	}
+	
+	/**
 	 * Creates a OBIS using a string representation
 	 * @param obis a String representing the OBIS in the form A.B.C.D.E.F
 	 */

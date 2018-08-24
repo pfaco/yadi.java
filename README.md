@@ -10,14 +10,18 @@ Dev: [![Build Status](https://travis-ci.org/pfaco/yadi.java.svg?branch=dev)](htt
 	* MODE-E connection
 	* PUBLIC/LLS/HLS authentication association
 	* AUTHENTICATION/ENCRYPTION security
-	* Long name referencing (no short name referencing yet)
+	* Long name referencing
 	* Serial and TCP implementations provided
 
 #### Dependencies:
-	* JSSC (for serial communication)
+	* jSerialComm
 
 ## Changelog 
 
+### Version 1.0.0 (2018.Aug.24)
+Added Get-Request-With-Block support.
+Added Set-Request-With-Block support.
+Modified serial dependency lib to jSerialComm.
 
 ### Version 0.0.3a (2018.Feb.05)
 Added tests
