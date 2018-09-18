@@ -55,8 +55,8 @@ public final class SerialPhyLayer implements PhyLayer {
 	
 	public enum StopBits {
 		_1(SerialPort.ONE_STOP_BIT),
-		_1_5(SerialPort.TWO_STOP_BITS),
-		_2(SerialPort.ONE_POINT_FIVE_STOP_BITS);
+		_1_5(SerialPort.ONE_POINT_FIVE_STOP_BITS),
+		_2(SerialPort.TWO_STOP_BITS);
 		int stopBits;
 		StopBits(int stopBits) {
 			this.stopBits = stopBits;
