@@ -13,10 +13,13 @@ Dev: [![Build Status](https://travis-ci.org/pfaco/yadi.java.svg?branch=dev)](htt
 	* Long name referencing
 	* Serial and TCP implementations provided
 
-#### Dependencies:
-	* jSerialComm
+### Dependencies:
+	* jSSC
 
 ## Changelog 
+
+### Version 1.0.0 (2019.Jan.30)
+Revert back to jSSC dependency for serial port.
 
 ### Version 1.0.0 (2018.Aug.24)
 Added Get-Request-With-Block support.
