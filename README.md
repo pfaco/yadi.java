@@ -13,7 +13,7 @@ Dev: [![Build Status](https://travis-ci.org/pfaco/yadi.java.svg?branch=dev)](htt
 	* Long name referencing
 	* Serial and TCP implementations provided
 
-#### Dependencies:
+### Dependencies:
 	* jSerialComm
 
 ## Changelog 

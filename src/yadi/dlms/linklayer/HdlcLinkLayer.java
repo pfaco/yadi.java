@@ -26,7 +26,6 @@ import java.util.Arrays;
 import yadi.dlms.linklayer.LinkLayerException.LinkLayerExceptionReason;
 import yadi.dlms.phylayer.PhyLayer;
 import yadi.dlms.phylayer.PhyLayerException;
-import yadi.dlms.phylayer.PhyLayerParser;
 
 public class HdlcLinkLayer implements LinkLayer {
 	
