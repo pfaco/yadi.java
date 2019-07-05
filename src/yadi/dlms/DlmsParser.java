@@ -221,8 +221,7 @@ public class DlmsParser {
 		case INT8:
 			return Integer.toString(payload[0]);
 		case OCTET_STRING:
-			//TODOreturn bytesToHex(payload);
-			return getDateTimeStringValue(payload);
+			return bytesToHex(payload);
 		case STRING:
 			return new String(payload, Charset.forName("US-ASCII"));
 		case STRUCTURE:
@@ -256,7 +255,7 @@ public class DlmsParser {
 		case DATE:
 			//TODO return getDateStringValue(payload);
 		case DATE_TIME:
-			//TODO return getDateTimeStringValue(payload);
+			return pack(type, getDateAndTimeBytes(value));
 		case FLOAT32:
 			//TODO return pack(type, );
 		case FLOAT64:
@@ -391,6 +390,53 @@ public class DlmsParser {
 			val >>>= 8;
 		}
 		return bytes;
+	}
+	
+	private static byte[] getDateAndTimeBytes(String str) {
+		str = str.replaceAll(" ", "");
+		str = str.replaceAll("/", "");
+		str = str.replaceAll(":", "");
+		String aux;
+		byte[] bytes = new byte[12];
+		aux = str.substring(0, 2);
+		try {
+			int index = 0;
+			int day = Integer.parseInt(aux);
+			aux = str.substring(2, 4);
+			int month = Integer.parseInt(aux);
+			aux = str.substring(4, 8);
+			int year = Integer.parseInt(aux);
+			aux = str.substring(8, 10);
+			int hour = Integer.parseInt(aux);
+			aux = str.substring(10, 12);
+			int min = Integer.parseInt(aux);
+			aux = str.substring(12, 14);
+			int sec = Integer.parseInt(aux);
+			bytes[index++] = (byte)((year & 0xFF00) >>> 8);
+			bytes[index++] = (byte)(year & 0xFF);
+			bytes[index++] = (byte)month;
+			bytes[index++] = (byte)day;
+			bytes[index++] = 0x00; //day of week
+			bytes[index++] = (byte)hour;
+			bytes[index++] = (byte)min;
+			bytes[index++] = (byte)sec;
+			bytes[index++] = 0x00; //millis
+			bytes[index++] = (byte)0x80; //deviation MSB
+			bytes[index++] = (byte)0x00; //deviation LSB
+			bytes[index++] = (byte)0x00; //clock status
+		} catch (Exception e) {
+			System.out.println("DateTime malformed");
+		}
+		return bytes;
+	}
+
+	public static byte[] getDateTimeByteValue(String string) {
+		byte[] data = new byte[14];
+		byte[] datatime = getDateAndTimeBytes(string);
+		data[0] = DlmsType.OCTET_STRING.tag;
+		data[1] = 12;
+		System.arraycopy(datatime, 0, data, 2, datatime.length);
+		return data;
 	}
 
 }

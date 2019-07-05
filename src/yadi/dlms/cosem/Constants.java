@@ -20,7 +20,7 @@ package yadi.dlms.cosem;
 class Constants {
 	
 	static final int DLMS_VERSION = 6;
-	static final int INVOKE_ID = 1;
+	static final int INVOKE_ID = 0x01;
 	static final int PRIORITY_HIGH = 1 << 7;
 	static final int PRIORITY_NORMAL = 0;
 	static final int SERVICE_CLASS_UNCONFIRMED = 0;

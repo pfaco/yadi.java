@@ -88,7 +88,7 @@ public class HdlcLinkLayer implements LinkLayer {
 	 * @param params the HdlcParameters for this object
 	 */
 	public HdlcLinkLayer(HdlcParameters params) {
-		this.params = new HdlcParameters();
+		this.params = params;
 		this.stream = new ByteArrayOutputStream();
 		this.connection = new HdlcConnection();
 	}
