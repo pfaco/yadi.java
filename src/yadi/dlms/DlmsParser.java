@@ -17,6 +17,8 @@
  */
 package yadi.dlms;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -93,6 +95,11 @@ public class DlmsParser {
 		return DlmsParser.getStringValue(type, getPayload(type, data));
 	}
 	
+	public static String getString(DlmsType type, ByteArrayInputStream is) throws DlmsException {
+		verify(is);
+		return DlmsParser.getStringValue(type, getPayload(type, is));
+	}
+
 	/**
 	 * Retrieves the String representation of the element in the array of bytes
 	 * @param type the DlmsType of the byte array
@@ -153,10 +160,27 @@ public class DlmsParser {
 		}
 	}
 	
+	private static void verify(ByteArrayInputStream is) throws DlmsException {
+		if (is == null || is.available() < 2) {
+			throw new DlmsException(DlmsExceptionReason.INVALID_DATA);
+		}
+	}
+	
 	public static byte[] getPayload(DlmsType type, byte[] data) {
 		int offset = type.size == 0 ? getOffset(data) : 1;
 		int size = type.size == 0 ? getSize(data) : type.size;
 		return Arrays.copyOfRange(data, offset, offset+size);
+	}
+	
+	public static byte[] getPayload(DlmsType type, ByteArrayInputStream is) throws DlmsException {
+		try {
+			int size = type.size == 0 ? getSize(is) : type.size;
+			byte[] data = new byte[size];
+			is.read(data);
+			return data;
+		} catch (IOException e) {
+			throw new DlmsException(DlmsExceptionReason.INVALID_DATA);
+		}
 	}
 	
 	public static byte[] pack(DlmsType type, byte[] data) {
@@ -286,6 +310,14 @@ public class DlmsParser {
 		}
 		return (data[1] & 0x0F) + 2;
 	}
+	
+	private static int getOffset(ByteArrayInputStream is) {
+		int value = is.read();
+		if (value <= 0x80) {
+			return 2;
+		}
+		return value + 2;
+	}
 
 	private static int getSize(byte[] data) {
 		if ((data[1] & 0xFF) <= 0x80) {
@@ -302,6 +334,41 @@ public class DlmsParser {
 		}
 		if (data[1] == (byte)0x84) {
 			return ByteBuffer.wrap(data, 2, 4).getInt();
+		}
+		throw new IllegalArgumentException();
+	}
+	
+	private static int getSize(ByteArrayInputStream is) {
+		int size = is.read();
+		if (size <= 0x80) {
+			return size;
+		}
+		if (size == 0x81) {
+			return is.read();
+		}
+		if (size== 0x82) {
+			size = is.read();
+			size <<= 8;
+			size |= is.read();
+			return size;
+		}
+		if (size == 0x83) {
+			size = is.read();
+			size <<= 8;
+			size |= is.read();
+			size <<= 8;
+			size |= is.read();
+			return size;
+		}
+		if (size == 0x84) {
+			size = is.read();
+			size <<= 8;
+			size |= is.read();
+			size <<= 8;
+			size |= is.read();
+			size <<= 8;
+			size |= is.read();
+			return size;
 		}
 		throw new IllegalArgumentException();
 	}
