@@ -26,7 +26,7 @@ public enum DlmsType {
 	BITSTRING(4,0),
 	BOOLEAN(3,1),
 	DATE(26,5),
-	DATE_TIME(25,12),
+	DATE_TIME(25,0),
 	ENUM(22,1),
 	FLOAT32(23,4),
 	FLOAT64(24,8),
@@ -51,7 +51,7 @@ public enum DlmsType {
 		this.size = size;
 	}
 	
-	static DlmsType fromTag(byte tag) throws DlmsException {
+	public static DlmsType fromTag(byte tag) throws DlmsException {
 		for (DlmsType type: values()) {
 			if (type.tag == tag) {
 				return type;
