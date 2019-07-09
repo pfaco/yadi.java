@@ -229,6 +229,7 @@ public class DlmsParser {
 		case DATE:
 			return getDateStringValue(payload);
 		case DATE_TIME:
+		case OCTET_STRING_AS_DATETIME:
 			return getDateTimeStringValue(payload);
 		case ENUM:
 			return bytesToHex(payload);
@@ -274,6 +275,7 @@ public class DlmsParser {
 		case BOOLEAN:
 		case ENUM:
 		case OCTET_STRING:
+		case OCTET_STRING_AS_DATETIME:
 		case STRUCTURE:
 			return pack(type, hexStringToBytes(value));
 		case DATE:
