@@ -19,55 +19,36 @@ package yadi.dlms.classes;
 
 import yadi.dlms.DlmsClient;
 import yadi.dlms.DlmsException;
-import yadi.dlms.DlmsParser;
 import yadi.dlms.Obis;
-import yadi.dlms.cosem.CosemClasses;
+import yadi.dlms.cosem.CosemParser;
 import yadi.dlms.cosem.LnDescriptor;
 import yadi.dlms.linklayer.LinkLayerException;
 import yadi.dlms.phylayer.PhyLayer;
 import yadi.dlms.phylayer.PhyLayerException;
 
 public class RegisterObject {
-	private static final int attValue = 2;
-	private static final int attScalarUnit = 3;
-	private static final int mtdReset = 1;
 	
-	private final Obis obis;
+	private final LnDescriptor attValue;
+	private final LnDescriptor attScalarUnit;
+	private final LnDescriptor mtdReset;
 	
-	/**
-	 * Creates a Register class (class_id=2) object
-	 * @param obis the object obis
-	 */
 	public RegisterObject(Obis obis) {
-		this.obis = obis;
+		attValue = new LnDescriptor(3, obis, 2);
+		attScalarUnit = new LnDescriptor(3, obis, 3);
+		mtdReset = new LnDescriptor(3, obis, 1);
 	}
 	
 	public void reset(DlmsClient dlms, PhyLayer phy) throws PhyLayerException, DlmsException, LinkLayerException {
-		final LnDescriptor desc = new LnDescriptor(CosemClasses.REGISTER.id, obis, mtdReset);
-		dlms.action(phy, desc);
+		dlms.action(phy, mtdReset);
 	}
 	
-	public byte[] getUnityScalar(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
-		final LnDescriptor desc = new LnDescriptor(CosemClasses.REGISTER.id, obis, attScalarUnit);
-		dlms.get(phy, desc);
-		return desc.getResponseData();
+	public CosemParser getUnityScalar(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
+		dlms.get(phy, attScalarUnit);
+		return CosemParser.make(attScalarUnit.getResponseData());
 	}
 	
-	public byte[] getValue(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
-		final LnDescriptor desc = new LnDescriptor(CosemClasses.REGISTER.id, obis, attValue);
-		dlms.get(phy, desc);
-		return desc.getResponseData();
-	}
-	
-	public String getStringValue(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
-		final LnDescriptor desc = new LnDescriptor(CosemClasses.REGISTER.id, obis, attValue);
-		dlms.get(phy, desc);
-		return DlmsParser.getString(desc.getResponseData());
-	}
-	
-	public int getIntegerValue(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
-		final LnDescriptor desc = new LnDescriptor(CosemClasses.REGISTER.id, obis, attValue);
-		dlms.get(phy, desc);
-		return DlmsParser.getInteger(desc.getResponseData());
+	public CosemParser getValue(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
+		dlms.get(phy, attValue);
+		return CosemParser.make(attValue.getResponseData());
 	}
 }

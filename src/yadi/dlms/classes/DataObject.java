@@ -19,9 +19,8 @@ package yadi.dlms.classes;
 
 import yadi.dlms.DlmsClient;
 import yadi.dlms.DlmsException;
-import yadi.dlms.DlmsParser;
 import yadi.dlms.Obis;
-import yadi.dlms.cosem.CosemClasses;
+import yadi.dlms.cosem.CosemParser;
 import yadi.dlms.cosem.LnDescriptor;
 import yadi.dlms.linklayer.LinkLayerException;
 import yadi.dlms.phylayer.PhyLayer;
@@ -29,34 +28,24 @@ import yadi.dlms.phylayer.PhyLayerException;
 
 public class DataObject {
 
-	private static final int attValue = 2;
+	private final LnDescriptor attValue;
 	
-	private final Obis obis;
+	public static DataObject fromObis(String obis) {
+		return new DataObject(new Obis(obis));
+	}
 	
-	/**
-	 * Creates a Data class (class_id=1) object
-	 * @param obis the object obis
-	 */
 	public DataObject(Obis obis) {
-		this.obis = obis;
+		attValue = new LnDescriptor(1, obis, 2);
 	}
 	
-	public byte[] getValue(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
-		final LnDescriptor desc = new LnDescriptor(CosemClasses.DATA.id, obis, attValue);
-		dlms.get(phy, desc);
-		return desc.getResponseData();
+	public CosemParser getValue(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
+		dlms.get(phy, attValue);
+		return CosemParser.make(attValue.getResponseData());
 	}
 	
-	public String getStringValue(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
-		final LnDescriptor desc = new LnDescriptor(CosemClasses.DATA.id, obis, attValue);
-		dlms.get(phy, desc);
-		return DlmsParser.getString(desc.getResponseData());
-	}
-	
-	public int getIntegerValue(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
-		final LnDescriptor desc = new LnDescriptor(CosemClasses.DATA.id, obis, attValue);
-		dlms.get(phy, desc);
-		return DlmsParser.getInteger(desc.getResponseData());
+	public void setValue(DlmsClient dlms, PhyLayer phy, byte[] data) throws DlmsException, PhyLayerException, LinkLayerException {
+		attValue.setRequestData(data);
+		dlms.set(phy, attValue);
 	}
 
 }
