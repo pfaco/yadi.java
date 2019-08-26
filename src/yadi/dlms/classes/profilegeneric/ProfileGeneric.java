@@ -3,7 +3,6 @@ package yadi.dlms.classes.profilegeneric;
 import yadi.dlms.DlmsClient;
 import yadi.dlms.DlmsException;
 import yadi.dlms.Obis;
-import yadi.dlms.classes.profilegeneric.ProfileGenericEntry.ProfileGenericItem;
 import yadi.dlms.cosem.CosemParser;
 import yadi.dlms.cosem.LnDescriptor;
 import yadi.dlms.linklayer.LinkLayerException;
@@ -79,8 +78,9 @@ public class ProfileGeneric {
 			int size = parser.parseStructureSize();
 			ProfileGenericEntry entry = new ProfileGenericEntry(size);
 			for (int j = 0; j < size; ++j) {
-				ProfileGenericItem item = new ProfileGenericItem(parser.getNextItemRawData());
+				entry.addItem(new ProfileGenericItem(parser.getNextItemRawData()));
 			}
+			buffer.addEntry(entry);
 		}
 		
 		return buffer;

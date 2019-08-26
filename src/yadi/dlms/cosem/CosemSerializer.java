@@ -69,25 +69,25 @@ public class CosemSerializer {
 		return this;
 	}
 	
-	private int booleanArrayToByte(boolean [] value, int offset) {
-		if (value.length > 8) {
-			throw new IllegalArgumentException();
-		}
-		int n = 0, l = value.length;
-		for (int i = 0; i < l; ++i) {
-		    n = (n << 1) + (value[i] ? 1 : 0);
-		}
-		return n;
-	}
-	
 	public CosemSerializer bitstring(boolean[] value) {
-		//TODO verify this
 		os.write(DlmsType.BITSTRING.tag);
 		serializeSize(value.length);
-		int size = value.length;
-		do {
-			os.write(booleanArrayToByte(value));
-		} while (size > 0);
+		int byteSize = (value.length / 8);
+		if (byteSize == 0) {
+			byteSize = ((value.length % 8) == 0) ? 0 : 1;
+		}
+		byte[] byteValue = new byte[byteSize];
+		int nextByte = 0;
+		int nextBit = 1;
+		for (int i = 0; i < value.length; ++i) {
+			byteValue[nextByte] |= value[i] ? nextBit : 0;
+			nextBit <<= 1;
+			if (nextBit > 0x80) {
+				nextBit = 1;
+				++nextByte;
+			}
+		}
+		serializeBytes(byteValue);
 		return this;
 	}
 	
