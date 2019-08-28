@@ -80,12 +80,7 @@ public class Cosem {
 				return Aarq.request(params, connection);
 			case CONNECTED:
 				LnDescriptor att = new LnDescriptor(CosemClasses.ASSOCIATION_LN.id, new Obis("0.0.40.0.0.255"), 1);
-				byte[] data = Security.processChallanger(params, connection);
-				ByteArrayOutputStream stream = new ByteArrayOutputStream();
-				stream.write(Constants.DataType.OCTET_STRING);
-				stream.write(data.length);
-				stream.write(data);
-				att.setRequestData(stream.toByteArray());
+				att.setRequestData(new CosemSerializer().octetString(Security.processChallanger(params, connection)).serialize());
 				return requestAction(att);
 			case AUTHENTICATED:
 				throw new IllegalStateException();

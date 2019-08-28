@@ -1,16 +1,16 @@
-package yadi.dlms.classes.profilegeneric;
+package yadi.dlms.selectiveaccess;
 
-import java.time.LocalDateTime;
 import yadi.dlms.Obis;
+import yadi.dlms.classes.clock.CosemDateTime;
 import yadi.dlms.cosem.CosemSerializer;
 
-public class DatetimeSelector implements SelectiveAccess {
+public class DateTimeSelector implements SelectiveAccess {
 	
 	private byte[] data;
 	
-	public DatetimeSelector(LocalDateTime dtFrom, LocalDateTime dtTo) {
-		CosemSerializer serializer = new CosemSerializer();
-		serializer.rawByte(0x01)
+	public DateTimeSelector(CosemDateTime dtFrom, CosemDateTime dtTo) {
+		this.data = new CosemSerializer()
+				  .rawByte(0x01)
 				  .structure(4)
 				  	.structure(4)
 				  		.uint16(8)
@@ -19,9 +19,8 @@ public class DatetimeSelector implements SelectiveAccess {
 				  		.uint16(0)
 				  	.datetime(dtFrom)
 				  	.datetime(dtTo)
-				  	.array(0);
-
-		data = serializer.serialize();
+				  	.array(0)
+				  	.serialize();
 	}
 
 	@Override

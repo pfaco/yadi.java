@@ -1,4 +1,4 @@
-package yadi.dlms.classes.profilegeneric;
+package yadi.dlms.selectiveaccess;
 import yadi.dlms.cosem.CosemSerializer;
 
 public class EntrySelector implements SelectiveAccess {
@@ -41,14 +41,14 @@ public class EntrySelector implements SelectiveAccess {
 	private byte[] data;
 	
 	private EntrySelector(int fromEntry, int toEntry, int fromSelected, int toSelected) {
-		CosemSerializer serializer = new CosemSerializer();
-		serializer.rawByte(0x02)
+		this.data = new CosemSerializer()
+				  .rawByte(0x02)
 				  .structure(4)
 					  .uint32(fromEntry)
 					  .uint32(toEntry)
 					  .uint16(fromSelected)
-					  .uint16(toSelected);
-		data = serializer.serialize();
+					  .uint16(toSelected)
+					  .serialize();
 	}
 
 	@Override

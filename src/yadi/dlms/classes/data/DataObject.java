@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package yadi.dlms.classes;
+package yadi.dlms.classes.data;
 
 import yadi.dlms.DlmsClient;
 import yadi.dlms.DlmsException;
@@ -26,29 +26,26 @@ import yadi.dlms.linklayer.LinkLayerException;
 import yadi.dlms.phylayer.PhyLayer;
 import yadi.dlms.phylayer.PhyLayerException;
 
-public class RegisterObject {
-	
+public class DataObject {
+
 	private final LnDescriptor attValue;
-	private final LnDescriptor attScalarUnit;
-	private final LnDescriptor mtdReset;
 	
-	public RegisterObject(Obis obis) {
-		attValue = new LnDescriptor(3, obis, 2);
-		attScalarUnit = new LnDescriptor(3, obis, 3);
-		mtdReset = new LnDescriptor(3, obis, 1);
+	public static DataObject fromObis(String obis) {
+		return new DataObject(new Obis(obis));
 	}
 	
-	public void reset(DlmsClient dlms, PhyLayer phy) throws PhyLayerException, DlmsException, LinkLayerException {
-		dlms.action(phy, mtdReset);
+	public DataObject(Obis obis) {
+		attValue = new LnDescriptor(1, obis, 2);
 	}
 	
-	public CosemParser getUnityScalar(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
-		dlms.get(phy, attScalarUnit);
-		return CosemParser.make(attScalarUnit.getResponseData());
-	}
-	
-	public CosemParser getValue(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
+	public CosemParser readValue(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
 		dlms.get(phy, attValue);
-		return CosemParser.make(attValue.getResponseData());
+		return new CosemParser(attValue.getResponseData());
 	}
+	
+	public void writeValue(DlmsClient dlms, PhyLayer phy, byte[] data) throws DlmsException, PhyLayerException, LinkLayerException {
+		attValue.setRequestData(data);
+		dlms.set(phy, attValue);
+	}
+
 }

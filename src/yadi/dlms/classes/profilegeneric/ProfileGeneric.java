@@ -8,6 +8,7 @@ import yadi.dlms.cosem.LnDescriptor;
 import yadi.dlms.linklayer.LinkLayerException;
 import yadi.dlms.phylayer.PhyLayer;
 import yadi.dlms.phylayer.PhyLayerException;
+import yadi.dlms.selectiveaccess.SelectiveAccess;
 
 public class ProfileGeneric {
 
@@ -93,25 +94,16 @@ public class ProfileGeneric {
 		
 		for (int i = 0; i < size; ++i) {
 			parser.verifyStructureSize(4);
-			list[i] = new CaptureObject();
-			list[i].classId = parser.uint16();
-			list[i].obis = new Obis(parser.octetString());
-			list[i].index = parser.int8();
-			list[i].dataIndex = parser.uint16();
+			list[i] = new CaptureObject(parser.uint16(), new Obis(parser.octetString()), parser.int8(), parser.uint16());
 		}
 		
 		return list;
 	}
 	
 	private CaptureObject makeSortObject(byte[] data) {
-		CaptureObject obj = new CaptureObject();
 		CosemParser parser = new CosemParser(data);
 		parser.verifyStructureSize(4);
-		obj.classId = parser.uint16();
-		obj.obis = new Obis(parser.octetString());
-		obj.index = parser.int8();
-		obj.dataIndex = parser.uint16();
-		return obj;
+		return new CaptureObject(parser.uint16(), new Obis(parser.octetString()), parser.int8(), parser.uint16());
 	}
 
 }

@@ -2,11 +2,11 @@ package yadi.dlms.cosem;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import yadi.dlms.DlmsType;
 import yadi.dlms.Obis;
+import yadi.dlms.classes.clock.CosemDate;
+import yadi.dlms.classes.clock.CosemDateTime;
+import yadi.dlms.classes.clock.CosemTime;
 
 public class CosemSerializer {
 	
@@ -101,38 +101,38 @@ public class CosemSerializer {
 		return this;
 	}
 	
-	public CosemSerializer date(LocalDate date) {
+	public CosemSerializer date(CosemDate date) {
 		os.write(DlmsType.OCTET_STRING.tag);
 		serializeSize(5);
 		os.write(date.getYear() >>> 8);
 		os.write(date.getYear());
-		os.write(date.getMonthValue());
-		os.write(date.getDayOfMonth());
-		os.write(date.getDayOfWeek().getValue());
+		os.write(date.getMonth());
+		os.write(date.getMonthDay());
+		os.write(date.getWeekDay());
 		return this;
 	}
 	
-	public CosemSerializer time(LocalTime time) {
+	public CosemSerializer time(CosemTime time) {
 		os.write(DlmsType.OCTET_STRING.tag);
 		serializeSize(4);
 		os.write(time.getHour());
 		os.write(time.getMinute());
-		os.write(time.getSecond());
+		os.write(time.getSeconds());
 		os.write(0);
 		return this;
 	}
 	
-	public CosemSerializer datetime(LocalDateTime dt) {
+	public CosemSerializer datetime(CosemDateTime dt) {
 		os.write(DlmsType.OCTET_STRING.tag);
 		serializeSize(12);
-		os.write(dt.getYear() >>> 8);
-		os.write(dt.getYear());
-		os.write(dt.getMonthValue());
-		os.write(dt.getDayOfMonth());
-		os.write(dt.getDayOfWeek().getValue());
-		os.write(dt.getHour());
-		os.write(dt.getMinute());
-		os.write(dt.getSecond());
+		os.write(dt.getDate().getYear() >>> 8);
+		os.write(dt.getDate().getYear());
+		os.write(dt.getDate().getMonth());
+		os.write(dt.getDate().getMonthDay());
+		os.write(dt.getDate().getWeekDay());
+		os.write(dt.getTime().getHour());
+		os.write(dt.getTime().getMinute());
+		os.write(dt.getTime().getSeconds());
 		os.write(0);
 		os.write(0x80);
 		os.write(0x00);

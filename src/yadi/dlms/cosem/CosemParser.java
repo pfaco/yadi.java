@@ -2,11 +2,12 @@ package yadi.dlms.cosem;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 import yadi.dlms.DlmsType;
+import yadi.dlms.classes.clock.ClockStatus;
+import yadi.dlms.classes.clock.CosemDate;
+import yadi.dlms.classes.clock.CosemDateTime;
+import yadi.dlms.classes.clock.CosemTime;
 
 public class CosemParser {
 
@@ -108,25 +109,38 @@ public class CosemParser {
 		return true;
 	}
 	
-	public LocalDate date() {
+	public CosemDate date() {
 		if (is.read() != DlmsType.OCTET_STRING.tag || is.available() < 7) {
 			throw new IllegalArgumentException();
 		}
-		return LocalDate.of(readU16(), is.read(), is.read());
+		if (is.read() != 5) {
+			throw new IllegalArgumentException();
+		}
+		return new CosemDate(readU16(), is.read(), is.read(), is.read());
 	}
 	
-	public LocalTime time() {
+	public CosemTime time() {
 		if (is.read() != DlmsType.OCTET_STRING.tag || is.available() < 5) {
 			throw new IllegalArgumentException();
 		}
-		return LocalTime.of(is.read(), is.read(), is.read());
+		if (is.read() != 4) {
+			throw new IllegalArgumentException();
+		}
+		return new CosemTime(is.read(), is.read(), is.read(), is.read());
 	}
 	
-	public LocalDateTime datetime() {
+	public CosemDateTime datetime() {
 		if (is.read() != DlmsType.OCTET_STRING.tag || is.available() < 13) {
 			throw new IllegalArgumentException();
 		}
-		return LocalDateTime.of(readU16(), is.read(), is.read(), is.read(), is.read(), is.read());
+		if (readU8() != 12) {
+			throw new IllegalArgumentException();
+		}
+		CosemDate date = new CosemDate(readU16(), is.read(), is.read(), is.read());
+		CosemTime time = new CosemTime(is.read(), is.read(), is.read(), is.read());
+		int deviation = readU16();
+		ClockStatus status = new ClockStatus(is.read());
+		return new CosemDateTime(date, time, deviation, status);
 	}
 	
 	public float float32() {
@@ -332,9 +346,6 @@ public class CosemParser {
 				break;
 			case UTF8_STRING:
 				break;
-			default:
-				break;
-			
 			}
 		} catch (Exception e) {
 			//

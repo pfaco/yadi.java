@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package yadi.dlms.classes;
+package yadi.dlms.classes.register;
 
 import yadi.dlms.DlmsClient;
 import yadi.dlms.DlmsException;
@@ -26,26 +26,40 @@ import yadi.dlms.linklayer.LinkLayerException;
 import yadi.dlms.phylayer.PhyLayer;
 import yadi.dlms.phylayer.PhyLayerException;
 
-public class DataObject {
-
+public class RegisterObject {
+	
 	private final LnDescriptor attValue;
+	private final LnDescriptor attScalarUnit;
+	private final LnDescriptor mtdReset;
 	
-	public static DataObject fromObis(String obis) {
-		return new DataObject(new Obis(obis));
+	public static RegisterObject fromObis(String obis) {
+		return new RegisterObject(new Obis(obis));
 	}
 	
-	public DataObject(Obis obis) {
-		attValue = new LnDescriptor(1, obis, 2);
+	public RegisterObject(Obis obis) {
+		attValue = new LnDescriptor(3, obis, 2);
+		attScalarUnit = new LnDescriptor(3, obis, 3);
+		mtdReset = new LnDescriptor(3, obis, 1);
 	}
 	
-	public CosemParser getValue(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
+	public void reset(DlmsClient dlms, PhyLayer phy) throws PhyLayerException, DlmsException, LinkLayerException {
+		dlms.action(phy, mtdReset);
+	}
+	
+	public CosemScalarAndUnit readUnityScalar(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
+		dlms.get(phy, attScalarUnit);
+		CosemParser parser = new CosemParser(attScalarUnit.getResponseData());
+		parser.verifyStructureSize(2);
+		return new CosemScalarAndUnit(parser.int8(), CosemUnit.fromValue(parser.enumeration()));
+	}
+	
+	public CosemParser readValue(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
 		dlms.get(phy, attValue);
 		return CosemParser.make(attValue.getResponseData());
 	}
 	
-	public void setValue(DlmsClient dlms, PhyLayer phy, byte[] data) throws DlmsException, PhyLayerException, LinkLayerException {
+	public void writeValue(DlmsClient dlms, PhyLayer phy, byte[] data) throws DlmsException, PhyLayerException, LinkLayerException {
 		attValue.setRequestData(data);
 		dlms.set(phy, attValue);
 	}
-
 }
