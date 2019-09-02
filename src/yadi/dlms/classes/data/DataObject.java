@@ -20,6 +20,7 @@ package yadi.dlms.classes.data;
 import yadi.dlms.DlmsClient;
 import yadi.dlms.DlmsException;
 import yadi.dlms.Obis;
+import yadi.dlms.classes.CosemSerializerProxy;
 import yadi.dlms.cosem.CosemParser;
 import yadi.dlms.cosem.LnDescriptor;
 import yadi.dlms.linklayer.LinkLayerException;
@@ -43,9 +44,11 @@ public class DataObject {
 		return new CosemParser(attValue.getResponseData());
 	}
 	
-	public void writeValue(DlmsClient dlms, PhyLayer phy, byte[] data) throws DlmsException, PhyLayerException, LinkLayerException {
-		attValue.setRequestData(data);
-		dlms.set(phy, attValue);
+	public CosemSerializerProxy value() throws DlmsException, PhyLayerException, LinkLayerException {
+		return new CosemSerializerProxy((dlms, phy, data) -> {
+			attValue.setRequestData(data);
+			dlms.set(phy, attValue);
+		});
 	}
 
 }

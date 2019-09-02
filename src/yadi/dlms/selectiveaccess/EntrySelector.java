@@ -40,6 +40,10 @@ public class EntrySelector implements SelectiveAccess {
 	
 	private byte[] data;
 	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
 	private EntrySelector(int fromEntry, int toEntry, int fromSelected, int toSelected) {
 		this.data = new CosemSerializer()
 				  .rawByte(0x02)

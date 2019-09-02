@@ -20,6 +20,7 @@ package yadi.dlms.classes.register;
 import yadi.dlms.DlmsClient;
 import yadi.dlms.DlmsException;
 import yadi.dlms.Obis;
+import yadi.dlms.classes.CosemSerializerProxy;
 import yadi.dlms.classes.clock.CosemDateTime;
 import yadi.dlms.cosem.CosemParser;
 import yadi.dlms.cosem.LnDescriptor;
@@ -63,9 +64,11 @@ public class ExtendedRegisterObject {
 		return new CosemParser(attValue.getResponseData());
 	}
 	
-	public void writeValue(DlmsClient dlms, PhyLayer phy, byte[] data) throws DlmsException, PhyLayerException, LinkLayerException {
-		attValue.setRequestData(data);
-		dlms.set(phy, attValue);
+	public CosemSerializerProxy value() throws DlmsException, PhyLayerException, LinkLayerException {
+		return new CosemSerializerProxy((dlms, phy, data) -> {
+			attValue.setRequestData(data);
+			dlms.set(phy, attValue);
+		});
 	}
 	
 	public CosemParser readStatus(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
