@@ -71,5 +71,9 @@ public class Obis {
 	public byte[] getValue() {
 		return value;
 	}
+	
+	@Override public String toString() {
+		return String.format("%d.%d.%d.%d.%d.%d", value[0] & 0xFF, value[1] & 0xFF, value[2] & 0xFF, value[3] & 0xFF, value[4] & 0xFF, value[5] & 0xFF);
+	}
 
 }

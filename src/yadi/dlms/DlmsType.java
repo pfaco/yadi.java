@@ -44,7 +44,7 @@ public enum DlmsType {
 	UINT32(6,4),
 	UINT64(21,8);
 	
-	public final byte tag;
+	public final int tag;
 	final int size;
 	
 	DlmsType(int tag, int size) {
@@ -52,7 +52,7 @@ public enum DlmsType {
 		this.size = size;
 	}
 	
-	public static DlmsType fromTag(byte tag) throws DlmsException {
+	public static DlmsType fromTag(int tag) throws DlmsException {
 		for (DlmsType type: values()) {
 			if (type.tag == tag) {
 				return type;

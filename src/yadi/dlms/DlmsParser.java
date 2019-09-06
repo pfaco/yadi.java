@@ -187,7 +187,7 @@ public class DlmsParser {
 		int size = type.size == 0 ? data.length : type.size; //TODO size > 1 byte
 		int offset = type.size == 0 ? 1 : 0;
 		byte[] retval = new byte[data.length + 1 + offset];
-		retval[0] = type.tag;
+		retval[0] = (byte) type.tag;
 		if (offset != 0) {
 			retval[1] = (byte)data.length;
 		}
@@ -447,7 +447,7 @@ public class DlmsParser {
 	
 	private static byte[] getIntegerBytes(DlmsType type, String str) {
 		byte[] bytes = new byte[type.size];
-		bytes[0] = type.tag;
+		bytes[0] = (byte) type.tag;
 		int val = 0;
 		try {
 			val = Integer.parseInt(str);
@@ -502,7 +502,7 @@ public class DlmsParser {
 	public static byte[] getDateTimeByteValue(String string) {
 		byte[] data = new byte[14];
 		byte[] datatime = getDateAndTimeBytes(string);
-		data[0] = DlmsType.OCTET_STRING.tag;
+		data[0] = (byte) DlmsType.OCTET_STRING.tag;
 		data[1] = 12;
 		System.arraycopy(datatime, 0, data, 2, datatime.length);
 		return data;
