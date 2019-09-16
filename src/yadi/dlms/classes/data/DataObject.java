@@ -31,21 +31,25 @@ public class DataObject {
 
 	private final LnDescriptor attValue;
 	
-	public static DataObject fromObis(String obis) {
-		return new DataObject(new Obis(obis));
+	public static CosemParser getValue(DlmsClient dlms, PhyLayer phy, String obis) throws DlmsException, PhyLayerException, LinkLayerException {
+		return new DataObject(new Obis(obis)).getValue(dlms, phy);
+	}
+	
+	public static CosemSerializerProxy setValue(DlmsClient dlms, PhyLayer phy, String obis) throws DlmsException, PhyLayerException, LinkLayerException {
+		return new DataObject(new Obis(obis)).setValue(dlms, phy);
 	}
 	
 	public DataObject(Obis obis) {
 		attValue = new LnDescriptor(1, obis, 2);
 	}
 	
-	public CosemParser readValue(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
+	public CosemParser getValue(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
 		dlms.get(phy, attValue);
 		return new CosemParser(attValue.getResponseData());
 	}
 	
-	public CosemSerializerProxy value() throws DlmsException, PhyLayerException, LinkLayerException {
-		return new CosemSerializerProxy((dlms, phy, data) -> {
+	public CosemSerializerProxy setValue(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
+		return new CosemSerializerProxy((data) -> {
 			attValue.setRequestData(data);
 			dlms.set(phy, attValue);
 		});

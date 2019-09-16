@@ -43,24 +43,32 @@ public class RegisterObject {
 		mtdReset = new LnDescriptor(3, obis, 1);
 	}
 	
+	public static CosemParser getValue(DlmsClient dlms, PhyLayer phy, String obis) throws DlmsException, PhyLayerException, LinkLayerException {
+		return new RegisterObject(new Obis(obis)).getValue(dlms, phy);
+	}
+	
+	public static CosemSerializerProxy value(DlmsClient dlms, PhyLayer phy, String obis) throws DlmsException, PhyLayerException, LinkLayerException {
+		return new RegisterObject(new Obis(obis)).setValue(dlms, phy);
+	}
+	
 	public void reset(DlmsClient dlms, PhyLayer phy) throws PhyLayerException, DlmsException, LinkLayerException {
 		dlms.action(phy, mtdReset);
 	}
 	
-	public CosemScalarAndUnit readUnityScalar(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
+	public CosemScalarAndUnit getUnityScalar(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
 		dlms.get(phy, attScalarUnit);
 		CosemParser parser = new CosemParser(attScalarUnit.getResponseData());
 		parser.verifyStructureSize(2);
 		return new CosemScalarAndUnit(parser.int8(), CosemUnit.fromValue(parser.enumeration()));
 	}
 	
-	public CosemParser readValue(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
+	public CosemParser getValue(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
 		dlms.get(phy, attValue);
 		return CosemParser.make(attValue.getResponseData());
 	}
 	
-	public CosemSerializerProxy value() throws DlmsException, PhyLayerException, LinkLayerException {
-		return new CosemSerializerProxy((dlms, phy, data) -> {
+	public CosemSerializerProxy setValue(DlmsClient dlms, PhyLayer phy) throws DlmsException, PhyLayerException, LinkLayerException {
+		return new CosemSerializerProxy((data) -> {
 			attValue.setRequestData(data);
 			dlms.set(phy, attValue);
 		});

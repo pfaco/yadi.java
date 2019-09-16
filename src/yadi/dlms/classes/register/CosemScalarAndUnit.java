@@ -1,8 +1,8 @@
 package yadi.dlms.classes.register;
 
 public class CosemScalarAndUnit {
-	private int scalar;
-	private CosemUnit unit;
+	private final int scalar;
+	private final CosemUnit unit;
 	
 	CosemScalarAndUnit(int scalar, CosemUnit unit) {
 		this.scalar = scalar;

@@ -75,11 +75,11 @@ public class ImageTransfer {
 		return new ImageInformation(parser.uint32(), new String(parser.octetString()), parser.octetString());
 	}
 
-	public void initiateTransfer(DlmsClient dlms, PhyLayer phy, String imageIdentifier, int imageSize) throws PhyLayerException, DlmsException, LinkLayerException {
+	public void initiateTransfer(DlmsClient dlms, PhyLayer phy, byte[] imageIdentifier, int imageSize) throws PhyLayerException, DlmsException, LinkLayerException {
 		mtdImageTransferInitiate.setRequestData(
 			new CosemSerializer()
 			.structure(2)
-			.string(imageIdentifier)
+			.octetString(imageIdentifier)
 			.uint32(imageSize)
 			.serialize()
 		);
@@ -116,11 +116,7 @@ public class ImageTransfer {
 	}
 	
 	public void executeImageTransfer(DlmsClient dlms, PhyLayer phy, Image image) throws PhyLayerException, DlmsException, LinkLayerException, ImageTransferException {
-		executeImageTransfer(dlms, phy, image, new ImageTransferObserver() {
-			@Override
-			public void updateProgress(double progress) {
-			}
-		}); 
+		executeImageTransfer(dlms, phy, image, (p) -> {});
 	}
 	
 	public void executeImageTransfer(DlmsClient dlms, PhyLayer phy, Image image, ImageTransferObserver observer) throws PhyLayerException, DlmsException, LinkLayerException, ImageTransferException {
@@ -132,7 +128,7 @@ public class ImageTransfer {
 		int numberOfBlocks = image.getNumberOfBlocks();
 		initiateTransfer(dlms, phy, image.getIdentifier(), image.getSize());
 		
-		for (int i = 1; i <= numberOfBlocks; ++i) {
+		for (int i = 0; i < numberOfBlocks; ++i) {
 			blockTransfer(dlms, phy, i, image.getBlock(i));
 			observer.updateProgress((double)i/numberOfBlocks);
 		}

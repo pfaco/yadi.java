@@ -22,7 +22,7 @@ public enum CosemUnit {
 	HERTZ(44),
 	NONE(255);
 	
-	int value;
+	private final int value;
 	
 	CosemUnit(int value) {
 		this.value = value;

@@ -30,6 +30,7 @@ import yadi.dlms.cosem.CosemParameters.SecurityType;
 class Aarq {
 
 	static byte[] request(CosemParameters params, CosemConnection connection) throws IOException, DlmsException {
+		
 		final int BASE = Constants.Ber.CLASS_CONTEXT | Constants.Ber.CONSTRUCTED;
 		final byte[] applicationContextName  = generateApplicationContextName(params.referenceType, params.securityType);
 		connection.proposedContextName = applicationContextName;
@@ -45,6 +46,7 @@ class Aarq {
 		data.write(Constants.Ber.OBJECT_IDENTIFIER);
 		data.write(applicationContextName.length);
 		data.write(applicationContextName);
+
 		if (params.securityType != SecurityType.NONE || params.authenticationType == AuthenticationType.HLS_GMAC) {
 			data.write(BASE | Constants.Ber.OBJECT_IDENTIFIER);
 			data.write(params.systemTitle.length+2);
@@ -80,6 +82,7 @@ class Aarq {
 		data.write(Constants.Ber.OCTET_STRING);
 		data.write(initiateRequest.length);
 		data.write(initiateRequest);
+		
 		ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		stream.write(Constants.Ber.CLASS_APPLICATION | Constants.Ber.CONSTRUCTED);
 		stream.write(data.size());

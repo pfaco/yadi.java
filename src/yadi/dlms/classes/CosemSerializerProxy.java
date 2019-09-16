@@ -1,13 +1,11 @@
 package yadi.dlms.classes;
 
-import yadi.dlms.DlmsClient;
 import yadi.dlms.DlmsException;
 import yadi.dlms.classes.clock.CosemDate;
 import yadi.dlms.classes.clock.CosemDateTime;
 import yadi.dlms.classes.clock.CosemTime;
 import yadi.dlms.cosem.CosemSerializer;
 import yadi.dlms.linklayer.LinkLayerException;
-import yadi.dlms.phylayer.PhyLayer;
 import yadi.dlms.phylayer.PhyLayerException;
 
 public class CosemSerializerProxy extends CosemSerializer {
@@ -18,8 +16,8 @@ public class CosemSerializerProxy extends CosemSerializer {
 		this.executer = executer;
 	}
 	
-	public void write(DlmsClient dlms, PhyLayer phy) throws PhyLayerException, DlmsException, LinkLayerException {
-		executer.execute(dlms, phy, this.serialize());
+	public void write() throws PhyLayerException, DlmsException, LinkLayerException {
+		executer.execute(this.serialize());
 	}
 	
 	@Override

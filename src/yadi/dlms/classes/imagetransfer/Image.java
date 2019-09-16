@@ -7,16 +7,16 @@ import java.util.Arrays;
 
 public class Image {
 
-	private byte[] data;
+	private final byte[] data;
+	private final byte[] identifier;
 	private int blockSize = 192;
-	private String identifier;
 	
-	public Image(byte[] data, String identifier) {
+	public Image(byte[] data, byte[] identifier) {
 		this.data = data;
 		this.identifier = identifier;
 	}
 	
-	public Image(String filepath, String identifier) throws IOException {
+	public Image(String filepath, byte[] identifier) throws IOException {
 		this(Files.readAllBytes(Paths.get(filepath)), identifier);
 	}
 	
@@ -25,21 +25,21 @@ public class Image {
 	}
 	
 	public byte[] getBlock(int blockNum) {
-		int maxBlock = (data.length / blockSize) + 1;
+		int maxBlock = getNumberOfBlocks() - 1;
 		
-		if (blockNum <= 0 || blockNum > maxBlock) {
+		if (blockNum < 0 || blockNum > maxBlock) {
 			throw new IllegalArgumentException();
 		}
 		
-		int from = (blockNum - 1) * blockSize;
-		int to = blockNum * blockSize;
+		int from = blockNum * blockSize;
+		int to = (blockNum + 1) * blockSize;
 		if (to >= data.length) {
-			to = data.length - 1;
+			to = data.length;
 		}
 		return Arrays.copyOfRange(data, from, to);
 	}
 
-	public String getIdentifier() {
+	public byte[] getIdentifier() {
 		return identifier;
 	}
 
@@ -48,7 +48,7 @@ public class Image {
 	}
 	
 	public int getNumberOfBlocks() {
-		return (data.length / blockSize) + 1;
+		return (int)Math.ceil((double)data.length / blockSize);
 	}
 	
 }

@@ -247,6 +247,10 @@ public class CosemParser {
 			return readI32();
 		}
 		
+		if (tag == DlmsType.ENUM.tag) {
+			return readU8();
+		}
+		
 		if (tag == DlmsType.OCTET_STRING.tag) {
 			int size = parseSize();
 			int val = 0;
@@ -258,6 +262,8 @@ public class CosemParser {
 			
 			return val;
 		}
+		
+		System.out.println("tag == "+tag);
 		
 		throw new IllegalArgumentException();
 	}

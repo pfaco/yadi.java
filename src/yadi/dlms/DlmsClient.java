@@ -79,7 +79,7 @@ public class DlmsClient {
 	 * @throws DlmsException 
 	 * @throws LinkLayerException 
 	 */
-	public void disconnect(PhyLayer phy) throws PhyLayerException, DlmsException, LinkLayerException {
+	public void disconnect(PhyLayer phy) throws PhyLayerException, LinkLayerException {
 		link.disconnect(phy);
 	}
 	

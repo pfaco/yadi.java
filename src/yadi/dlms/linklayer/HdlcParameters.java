@@ -27,6 +27,10 @@ public class HdlcParameters {
 	byte[] serverAddress = new byte[]{0x00, 0x02, (byte)0xFE, (byte)0xFF};
 	byte clientAddress = 0x03;
 	
+	public int getTimeout() {
+		return timeoutMillis;
+	}
+	
 	public void setMaxInformationFieldLength(int maxLength) {
 		if (maxLength < 0) {
 			throw new IllegalArgumentException("Information field length must be positive");
