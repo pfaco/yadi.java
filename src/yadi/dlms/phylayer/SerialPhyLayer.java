@@ -18,10 +18,11 @@
 package yadi.dlms.phylayer;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 
-import jssc.*;
+import com.fazecast.jSerialComm.SerialPort;
+import com.fazecast.jSerialComm.SerialPortInvalidPortException;
+
 import yadi.dlms.phylayer.PhyLayerException.PhyLayerExceptionReason;
 
 public final class SerialPhyLayer implements PhyLayer {
@@ -30,10 +31,10 @@ public final class SerialPhyLayer implements PhyLayer {
 	private final ByteArrayOutputStream stream = new ByteArrayOutputStream();
 	
 	public enum DataBits {
-		_5(SerialPort.DATABITS_5),
-		_6(SerialPort.DATABITS_6),
-		_7(SerialPort.DATABITS_7),
-		_8(SerialPort.DATABITS_8);
+		_5(5),
+		_6(6),
+		_7(7),
+		_8(8);
 		int dataBits;
 		DataBits(int dataBits) {
 			this.dataBits = dataBits;
@@ -41,11 +42,11 @@ public final class SerialPhyLayer implements PhyLayer {
 	}
 	
 	public enum Parity {
-	    NONE(SerialPort.PARITY_NONE),
-	    EVEN(SerialPort.PARITY_EVEN),
-	    ODD(SerialPort.PARITY_ODD),
-	    MARK(SerialPort.PARITY_MARK),
-	    SPACE(SerialPort.PARITY_SPACE);
+	    NONE(SerialPort.NO_PARITY),
+	    EVEN(SerialPort.EVEN_PARITY),
+	    ODD(SerialPort.ODD_PARITY),
+	    MARK(SerialPort.MARK_PARITY),
+	    SPACE(SerialPort.SPACE_PARITY);
 		int par;
 		Parity(int par) {
 			this.par = par;
@@ -53,9 +54,9 @@ public final class SerialPhyLayer implements PhyLayer {
 	}
 	
 	public enum StopBits {
-		_1(SerialPort.STOPBITS_1),
-		_1_5(SerialPort.STOPBITS_1_5),
-		_2(SerialPort.STOPBITS_2);
+		_1(SerialPort.ONE_STOP_BIT),
+		_1_5(SerialPort.ONE_POINT_FIVE_STOP_BITS),
+		_2(SerialPort.TWO_STOP_BITS);
 		int stopBits;
 		StopBits(int stopBits) {
 			this.stopBits = stopBits;
@@ -67,7 +68,12 @@ public final class SerialPhyLayer implements PhyLayer {
 	 * @return an array of Strings with the name of each serial port in the system
 	 */
 	public static String[] getListOfAvailableSerialPorts() {
-		return (String[])SerialPortList.getPortNames();
+		var ports = SerialPort.getCommPorts();
+		var retval = new String[ports.length];
+		for (int i = 0; i < ports.length; ++i) {
+			retval[i] = ports[i].getDescriptivePortName();
+		}
+		return retval;
 	}
 	
 	/**
@@ -75,14 +81,13 @@ public final class SerialPhyLayer implements PhyLayer {
 	 * @param enabled true if the RTS pin should be set, false if it should be cleared
 	 * @throws PhyLayerException
 	 */
-	public void setRTS(boolean enabled) throws PhyLayerException {
-		try {
-			serialPort.setRTS(enabled);
-			Thread.sleep(250);
-		} catch (SerialPortException e) {
+	public void setRTS() throws PhyLayerException {
+		if (!serialPort.setRTS()) {
 			throw new PhyLayerException(PhyLayerExceptionReason.INTERNAL_ERROR);
+		}
+		try {
+			Thread.sleep(250);	
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -94,10 +99,12 @@ public final class SerialPhyLayer implements PhyLayer {
 	 */
 	public void open(String serialName) throws PhyLayerException {
 		try {
-			serialPort = new SerialPort(serialName);
-			serialPort.openPort();
-			setRTS(true);
-		} catch (SerialPortException e) {
+			serialPort = SerialPort.getCommPort(serialName);
+			if (!serialPort.openPort()) {
+				throw new PhyLayerException(PhyLayerExceptionReason.BUSY_CHANNEL);
+			}
+			setRTS();
+		} catch (SerialPortInvalidPortException e) {
 			throw new PhyLayerException(PhyLayerExceptionReason.BUSY_CHANNEL);
 		}
 	}
@@ -106,11 +113,7 @@ public final class SerialPhyLayer implements PhyLayer {
 	 * Closes the serial port
 	 */
 	public void close() {
-		try {
-			serialPort.closePort();
-		} catch (SerialPortException e) {
-			// silence disconnection
-		}
+		serialPort.closePort();
 	}
 	
 	/**
@@ -122,9 +125,16 @@ public final class SerialPhyLayer implements PhyLayer {
 	 * @throws PhyLayerException
 	 */
 	public void config(int baudRate, DataBits dataBits, Parity parity, StopBits stopBits) throws PhyLayerException  {
-		try {
-			serialPort.setParams(baudRate, dataBits.dataBits, stopBits.stopBits, parity.par);		
-		} catch (SerialPortException e) {
+		if (!serialPort.setBaudRate(baudRate)) {
+			throw new PhyLayerException(PhyLayerExceptionReason.INTERNAL_ERROR);
+		}
+		if (!serialPort.setNumDataBits(dataBits.dataBits)) {
+			throw new PhyLayerException(PhyLayerExceptionReason.INTERNAL_ERROR);
+		}
+		if (!serialPort.setParity(parity.par)) {
+			throw new PhyLayerException(PhyLayerExceptionReason.INTERNAL_ERROR);
+		}
+		if (!serialPort.setNumStopBits(stopBits.stopBits)) {
 			throw new PhyLayerException(PhyLayerExceptionReason.INTERNAL_ERROR);
 		}
 	}
@@ -135,13 +145,11 @@ public final class SerialPhyLayer implements PhyLayer {
 	 */
 	@Override
 	public void sendData(byte[] data) throws PhyLayerException {
-        try {
-			serialPort.writeBytes(data);
-			for (PhyLayerListener listener : listeners) {
-				listener.dataSent(data);
-			}
-		} catch (SerialPortException e) {
+		if (serialPort.writeBytes(data, data.length) == -1) {
 			throw new PhyLayerException(PhyLayerExceptionReason.INTERNAL_ERROR);
+		}
+		for (PhyLayerListener listener : listeners) {
+			listener.dataSent(data);
 		}
     }
 
@@ -155,27 +163,29 @@ public final class SerialPhyLayer implements PhyLayer {
 		if (timeoutMillis < 0 || parser == null) {
 			throw new IllegalArgumentException();
 		}
-		try {
-			byte[] data;
-			stream.reset();
-			long timeLimit = System.nanoTime() + (timeoutMillis * 1000000L);
-			while (timeLimit > System.nanoTime()) {
-				if ((data = serialPort.readBytes()) != null) {
-					stream.write(data);
-					if (parser.isFrameComplete(stream.toByteArray())) {
-						for (PhyLayerListener listener : listeners) {
-							listener.dataReceived(stream.toByteArray());
-						}
-						return stream.toByteArray();
+
+		byte[] data = new byte[256];
+		stream.reset();
+		long timeLimit = System.nanoTime() + (timeoutMillis * 1000000L);
+		
+		while (timeLimit > System.nanoTime()) {
+			int len = serialPort.readBytes(data, data.length);
+		
+			if (len == -1) {
+				throw new PhyLayerException(PhyLayerExceptionReason.INTERNAL_ERROR);
+			}
+			
+			if (len > 0) {
+				stream.write(data, 0, len);
+				if (parser.isFrameComplete(stream.toByteArray())) {
+					for (PhyLayerListener listener : listeners) {
+						listener.dataReceived(stream.toByteArray());
 					}
+					return stream.toByteArray();
 				}
 			}
-			throw new PhyLayerException(PhyLayerExceptionReason.TIMEOUT);
-		} catch (IOException e) {
-			throw new PhyLayerException(PhyLayerExceptionReason.INTERNAL_ERROR);
-		} catch (SerialPortException e) {
-			throw new PhyLayerException(PhyLayerExceptionReason.BUSY_CHANNEL);
 		}
+		throw new PhyLayerException(PhyLayerExceptionReason.TIMEOUT);
 	}
 
 	/**

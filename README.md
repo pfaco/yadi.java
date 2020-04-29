@@ -18,6 +18,9 @@ Dev: [![Build Status](https://travis-ci.org/pfaco/yadi.java.svg?branch=dev)](htt
 
 ## Changelog 
 
+### Version 1.0.6 (2020.Apr)
+Uses jSerialComm as serial communication due to incompability of jSSC and Windows 10
+
 ### Version 1.0.0 (2019.Jan.30)
 Revert back to jSSC dependency for serial port.
 
