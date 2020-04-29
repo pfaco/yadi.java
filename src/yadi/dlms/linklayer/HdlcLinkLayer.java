@@ -169,8 +169,8 @@ public class HdlcLinkLayer implements LinkLayer {
 		byte[] data = phy.readData(params.timeoutMillis, (a) -> isFrameComplete(a));	
 		
 		int offset = 0;
-		while (data[offset] != HDLC_FLAG) {
-			offset++;
+		while (offset < (data.length-1) && (data[offset] != HDLC_FLAG || data[offset+1] == HDLC_FLAG)) {
+			++offset;
 		}
 		if (offset > 0) {
 			data = Arrays.copyOfRange(data, offset, data.length);
@@ -357,7 +357,10 @@ public class HdlcLinkLayer implements LinkLayer {
 
 	private boolean isFrameComplete(byte[] data) {
 		int offset = 0;
-		while (offset < data.length && data[offset] != HDLC_FLAG) {
+		if (data.length < 3) {
+			return false;
+		}
+		while (offset < (data.length-1) && (data[offset] != HDLC_FLAG || data[offset+1] == HDLC_FLAG)) {
 			++offset;
 		}
 		if(data.length < (offset + 9) || data[offset] != HDLC_FLAG || data[data.length - 1] != HDLC_FLAG) { 

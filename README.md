@@ -18,6 +18,12 @@ Dev: [![Build Status](https://travis-ci.org/pfaco/yadi.java.svg?branch=dev)](htt
 
 ## Changelog 
 
+### Version 1.0.8 (2020.Apr)
+Added DlmsItem and DlmsParser
+
+### Version 1.0.7 (2020.Apr)
+Updated Java version and necessary plugins
+
 ### Version 1.0.6 (2020.Apr)
 Uses jSerialComm as serial communication due to incompability of jSSC and Windows 10
 
