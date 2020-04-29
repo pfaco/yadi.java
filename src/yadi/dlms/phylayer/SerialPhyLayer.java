@@ -68,8 +68,8 @@ public final class SerialPhyLayer implements PhyLayer {
 	 * @return an array of Strings with the name of each serial port in the system
 	 */
 	public static String[] getListOfAvailableSerialPorts() {
-		var ports = SerialPort.getCommPorts();
-		var retval = new String[ports.length];
+		SerialPort[] ports = SerialPort.getCommPorts();
+		String[] retval = new String[ports.length];
 		for (int i = 0; i < ports.length; ++i) {
 			retval[i] = ports[i].getDescriptivePortName();
 		}
