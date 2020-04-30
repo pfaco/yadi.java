@@ -184,7 +184,6 @@ public class DlmsParser {
 	}
 	
 	public static byte[] pack(DlmsType type, byte[] data) {
-		int size = type.size == 0 ? data.length : type.size; //TODO size > 1 byte
 		int offset = type.size == 0 ? 1 : 0;
 		byte[] retval = new byte[data.length + 1 + offset];
 		retval[0] = (byte) type.tag;
@@ -311,14 +310,6 @@ public class DlmsParser {
 			return 2;
 		}
 		return (data[1] & 0x0F) + 2;
-	}
-	
-	private static int getOffset(ByteArrayInputStream is) {
-		int value = is.read();
-		if (value <= 0x80) {
-			return 2;
-		}
-		return value + 2;
 	}
 
 	private static int getSize(byte[] data) {

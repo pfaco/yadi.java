@@ -33,7 +33,7 @@ public class Emode {
 			byte[] rxBuff = com.readData(1000, (a) -> isFrameComplete(a));
 			byte baud = (rxBuff[4] & 0xFF) > 0x35 ? 0x35 : rxBuff[4];
 			com.sendData(new byte[]{0x06, 0x32, baud, 0x32, 0x0D, 0x0A});
-			Thread.sleep(550);
+			Thread.sleep(150);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}

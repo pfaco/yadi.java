@@ -22,7 +22,6 @@ import yadi.dlms.DlmsException;
 import yadi.dlms.Obis;
 import yadi.dlms.classes.CosemSerializerProxy;
 import yadi.dlms.classes.clock.CosemDateTime;
-import yadi.dlms.classes.data.DataObject;
 import yadi.dlms.cosem.CosemParser;
 import yadi.dlms.cosem.LnDescriptor;
 import yadi.dlms.linklayer.LinkLayerException;
