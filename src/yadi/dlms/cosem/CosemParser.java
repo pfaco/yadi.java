@@ -85,8 +85,20 @@ public class CosemParser {
 	}
 
 	public byte[] octetString() {
-		if (is.read() != DlmsType.OCTET_STRING.tag) {
-			throw new IllegalArgumentException();
+		int tag = is.read();
+		if (tag != DlmsType.OCTET_STRING.tag) {
+			throw new IllegalArgumentException("received tag = "+tag);
+		}
+		int size = parseSize();
+		byte[] rawbytes = new byte[size];
+		is.read(rawbytes, 0, size);
+		return rawbytes;
+	}
+	
+	public byte[] bcd() {
+		int tag = is.read();
+		if (tag != DlmsType.BCD.tag) {
+			throw new IllegalArgumentException("received tag = "+tag);
 		}
 		int size = parseSize();
 		byte[] rawbytes = new byte[size];

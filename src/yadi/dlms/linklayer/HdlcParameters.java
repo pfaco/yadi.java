@@ -26,6 +26,9 @@ public class HdlcParameters {
 	int maxInformationFieldLengthRx = 128;
 	byte[] serverAddress = new byte[]{0x00, 0x02, (byte)0xFE, (byte)0xFF};
 	byte clientAddress = 0x03;
+	private int clientAddressDecoded = 0x01;
+	private int serverUpperAddress = 0x01;
+	private int serverlowerAddress = 0x3FFF;
 	
 	public int getTimeout() {
 		return timeoutMillis;
@@ -49,6 +52,7 @@ public class HdlcParameters {
 		if (clientAddress < 0 || clientAddress > 0x7F) {
 			throw new IllegalArgumentException("Maximum client address is 0x7F");
 		}
+		this.clientAddressDecoded = clientAddress;
 		this.clientAddress = (byte)((clientAddress << 1) | 0x01);
 	}
 	
@@ -63,10 +67,24 @@ public class HdlcParameters {
 		if (lowerAddress < 0 || lowerAddress > 0x3FFF || upperAddress < 0 || upperAddress > 0x3FFF) {
 			throw new IllegalArgumentException("Maximum address is 0x3FFF");
 		}
+		this.serverUpperAddress = upperAddress;
+		this.serverlowerAddress = lowerAddress;
 		this.serverAddress = new byte[]{ (byte)((upperAddress >>> 6) & 0xFE), 
 				                         (byte)((upperAddress << 1)  & 0xFE),
 				                         (byte)((lowerAddress >>> 6) & 0xFE),
 				                         (byte)((lowerAddress << 1)  | 0x01)};
+	}
+
+	public int getServerUpperAddr() {
+		return  serverUpperAddress;
+	}
+	
+	public int getServerLowerAddr() {
+		return  serverlowerAddress;
+	}
+
+	public int getClientAddr() {
+		return clientAddressDecoded;
 	}
 	
 }

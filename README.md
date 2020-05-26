@@ -18,6 +18,10 @@ Dev: [![Build Status](https://travis-ci.org/pfaco/yadi.java.svg?branch=dev)](htt
 
 ## Changelog 
 
+### Version 1.0.9 (2020.May)
+Added support for short name read and write
+Fixed bugs in WrapperLinkLayer
+
 ### Version 1.0.8 (2020.Apr)
 Added DlmsItem and DlmsParser
 

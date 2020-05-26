@@ -23,6 +23,7 @@ import yadi.dlms.Obis;
 import yadi.dlms.classes.CosemSerializerProxy;
 import yadi.dlms.cosem.CosemParser;
 import yadi.dlms.cosem.LnDescriptor;
+import yadi.dlms.cosem.SnDescriptor;
 import yadi.dlms.linklayer.LinkLayerException;
 import yadi.dlms.phylayer.PhyLayer;
 import yadi.dlms.phylayer.PhyLayerException;
@@ -30,6 +31,42 @@ import yadi.dlms.phylayer.PhyLayerException;
 public class DataObject {
 
 	private final LnDescriptor attValue;
+	
+	public static CosemParser getAttribute(DlmsClient dlms, PhyLayer phy, int classId, String obis, int att) throws DlmsException, PhyLayerException, LinkLayerException {
+		LnDescriptor desc = new LnDescriptor(classId, new Obis(obis), att);
+		dlms.get(phy, desc);
+		return new CosemParser(desc.getResponseData());
+	}
+	
+	public static CosemParser readAttribute(DlmsClient dlms, PhyLayer phy, int shortName) throws PhyLayerException, LinkLayerException, DlmsException {
+		SnDescriptor desc = new SnDescriptor(shortName);
+		dlms.read(phy, desc);
+		return new CosemParser(desc.getResponseData());
+	}
+	
+	public static CosemSerializerProxy setAttribute(DlmsClient dlms, PhyLayer phy, int classId, String obis, int att) throws DlmsException, PhyLayerException, LinkLayerException {
+		LnDescriptor desc = new LnDescriptor(classId, new Obis(obis), att);
+		return new CosemSerializerProxy((data) -> {
+			desc.setRequestData(data);
+			dlms.set(phy, desc);
+		});
+	}
+	
+	public static CosemSerializerProxy writeAttribute(DlmsClient dlms, PhyLayer phy, int shortName) throws DlmsException, PhyLayerException, LinkLayerException {
+		SnDescriptor desc = new SnDescriptor(shortName);
+		return new CosemSerializerProxy((data) -> {
+			desc.setRequestData(data);
+			dlms.write(phy, desc);
+		});
+	}
+	
+	public static CosemSerializerProxy execAttribute(DlmsClient dlms, PhyLayer phy, int classId, String obis, int att) {
+		LnDescriptor desc = new LnDescriptor(classId, new Obis(obis), att);
+		return new CosemSerializerProxy((data) -> {
+			desc.setRequestData(data);
+			dlms.action(phy, desc);
+		});
+	}
 	
 	public static CosemParser getValue(DlmsClient dlms, PhyLayer phy, String obis) throws DlmsException, PhyLayerException, LinkLayerException {
 		return new DataObject(new Obis(obis)).getValue(dlms, phy);

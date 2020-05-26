@@ -145,5 +145,12 @@ public class CosemSerializerProxy extends CosemSerializer {
 		super.uint8(value);
 		return this;
 	}
+
+	@Override
+	public CosemSerializerProxy bcd(byte[] bytes) {
+		super.bcd(bytes);
+		return this;
+		
+	}
 	
 }

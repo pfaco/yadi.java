@@ -25,5 +25,9 @@ public class WrapperParameters {
 	public short wPortSource = CLIENT_MANAGEMENT_PROCESS;
 	public short wPortDestination = BROADCAST;
 	public int timeoutMillis = 1500;
+	
+	public void setTimeout(int timeout) {
+		timeoutMillis = timeout;
+	}
 
 }

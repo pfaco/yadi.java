@@ -250,5 +250,29 @@ public class CosemParameters {
 			throw new IllegalArgumentException();
 		}
 	}
+
+	public byte[] getSecret() {
+		return llsHlsSecret;
+	}
+
+	public byte[] getAk() {
+		return ak;
+	}
+	
+	public byte[] getEk() {
+		return ek;
+	}
+
+	public byte[] getSystemTitle() {
+		return systemTitle;
+	}
+
+	public AuthenticationType getAuthenticationType() {
+		return authenticationType;
+	}
+
+	public SecurityType getSecurityType() {
+		return securityType;
+	}
 	
 }

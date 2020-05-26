@@ -449,5 +449,71 @@ public class Cosem {
 		
 		return Arrays.copyOfRange(data, offset+nBytes+skip, data.length);
 	}
+
+	public byte[] readRequest(SnDescriptor desc) throws DlmsException {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		stream.write(Constants.xDlmsApdu.NoCiphering.READ_REQUEST);
+		stream.write(0x01);
+		stream.write(0x02);
+		stream.write((desc.getShortName() >>> 8) & 0xFF);
+		stream.write(desc.getShortName() & 0xFF);
+		return packFrame(Constants.xDlmsApdu.GlobalCiphering.READ_REQUEST, stream.toByteArray());
+	}
+
+	public void parseReadResponse(SnDescriptor att, byte[] data) throws DlmsException {
+		data = unpackFrame(Constants.xDlmsApdu.NoCiphering.READ_RESPONSE,
+                Constants.xDlmsApdu.GlobalCiphering.READ_RESPONSE, data);
+
+		if (data.length < 2) {
+			throw new DlmsException(DlmsExceptionReason.INVALID_DATA);
+		}
+		
+		if (data[0] != 1) {
+			throw new DlmsException(DlmsExceptionReason.INVALID_DATA);
+		}
+		
+		if (data[1] == 0x00) {
+			att.setResponseData(Arrays.copyOfRange(data, 1, data.length));
+		}
+		
+		if (data.length < 3) {
+			throw new DlmsException(DlmsExceptionReason.INVALID_DATA);
+		}
+		
+		verifyDataAccessResult(data[2]);
+	}
+
+	public byte[] writeRequest(SnDescriptor desc) throws DlmsException {
+		ByteArrayOutputStream stream = new ByteArrayOutputStream();
+		stream.write(Constants.xDlmsApdu.NoCiphering.WRITE_REQUEST);
+		stream.write(0x01);
+		stream.write(0x02);
+		stream.write((desc.getShortName() >>> 8) & 0xFF);
+		stream.write(desc.getShortName() & 0xFF);
+		return packFrame(Constants.xDlmsApdu.GlobalCiphering.WRITE_REQUEST, stream.toByteArray());
+	}
+
+	public void parseWriteResponse(SnDescriptor att, byte[] data) throws DlmsException {
+		data = unpackFrame(Constants.xDlmsApdu.NoCiphering.WRITE_RESPONSE,
+                Constants.xDlmsApdu.GlobalCiphering.WRITE_RESPONSE, data);
+
+		if (data.length < 2) {
+			throw new DlmsException(DlmsExceptionReason.INVALID_DATA);
+		}
+		
+		if (data[0] != 1) {
+			throw new DlmsException(DlmsExceptionReason.INVALID_DATA);
+		}
+		
+		if (data[1] == 0x00) {
+			att.setResponseData(Arrays.copyOfRange(data, 1, data.length));
+		}
+		
+		if (data.length < 3) {
+			throw new DlmsException(DlmsExceptionReason.INVALID_DATA);
+		}
+		
+		verifyDataAccessResult(data[2]);
+	}
 	
 }

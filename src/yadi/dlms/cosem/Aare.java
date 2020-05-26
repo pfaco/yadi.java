@@ -82,7 +82,6 @@ class Aare {
 				for (byte b : connection.serverSysTitle) {
 					sb.append(b);
 				}
-				System.out.println(sb);
 			}
 			else if (tag == (Constants.Ber.CLASS_CONTEXT | Constants.AareApdu.RESPONDER_ACSE_REQUIREMENTS)) {
 				//System.out.println("Resp ACSE Req: "+printBytes(value));

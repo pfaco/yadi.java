@@ -71,7 +71,7 @@ public final class SerialPhyLayer implements PhyLayer {
 		SerialPort[] ports = SerialPort.getCommPorts();
 		String[] retval = new String[ports.length];
 		for (int i = 0; i < ports.length; ++i) {
-			retval[i] = ports[i].getDescriptivePortName();
+			retval[i] = ports[i].getSystemPortName();
 		}
 		return retval;
 	}

@@ -67,6 +67,10 @@ class Constants {
 			static final int GET_RESPONSE = 196;
 			static final int SET_RESPONSE = 197;
 			static final int ACTION_RESPONSE = 199;
+			static final int READ_REQUEST = 5;
+			static final int WRITE_REQUEST = 6;
+			static final int READ_RESPONSE = 12;
+			static final int WRITE_RESPONSE = 13;
 		}
 		
 		static class GlobalCiphering {
@@ -79,6 +83,10 @@ class Constants {
 			static final int GET_RESPONSE = 204;
 			static final int SET_RESPONSE = 205;
 			static final int ACTION_RESPONSE = 207;
+			static final int READ_REQUEST = 37;
+			static final int WRITE_REQUEST = 38;
+			static final int READ_RESPONSE = 44;
+			static final int WRITE_RESPONSE = 45;
 		}
 		
 		static class DedicatedCiphering {

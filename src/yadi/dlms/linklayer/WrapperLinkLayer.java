@@ -79,6 +79,7 @@ public class WrapperLinkLayer implements LinkLayer {
 		stream.write(params.wPortSource);
 		stream.write(params.wPortDestination >>> 8);
 		stream.write(params.wPortDestination);
+		stream.write(data.length >>> 8);
 		stream.write(data.length);
 		for (byte b : data) {
 			stream.write(b);
@@ -98,6 +99,7 @@ public class WrapperLinkLayer implements LinkLayer {
 		short version = ByteBuffer.allocate(2).put(data,0,2).getShort(0);
 		short wPortSource = ByteBuffer.allocate(2).put(data,2,2).getShort(0);
 		short wPortDestination = ByteBuffer.allocate(2).put(data,4,2).getShort(0);
+		short length = ByteBuffer.allocate(2).put(data,6,2).getShort(0);
 		
 		if (version != WRAPPER_VERSION) {
 			throw new LinkLayerException(LinkLayerExceptionReason.RECEIVED_INVALID_FRAME_FORMAT);
@@ -106,6 +108,10 @@ public class WrapperLinkLayer implements LinkLayer {
 		if (wPortSource != params.wPortDestination ||
 		    wPortDestination != params.wPortSource	) {
 			throw new LinkLayerException(LinkLayerExceptionReason.RECEIVED_INVALID_ADDRESS);
+		}
+		
+		if (length != data.length - 8) {
+			throw new LinkLayerException(LinkLayerExceptionReason.RECEIVED_INVALID_FRAME_FORMAT);
 		}
 		
 		return Arrays.copyOfRange(data, 8, data.length);
@@ -122,6 +128,10 @@ public class WrapperLinkLayer implements LinkLayer {
 		}
 		
 		return true;
+	}
+
+	public WrapperParameters getParameters() {
+		return params;
 	}
 
 }

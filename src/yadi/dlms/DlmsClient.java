@@ -20,6 +20,7 @@ package yadi.dlms;
 import yadi.dlms.cosem.Cosem;
 import yadi.dlms.cosem.CosemParameters;
 import yadi.dlms.cosem.LnDescriptor;
+import yadi.dlms.cosem.SnDescriptor;
 import yadi.dlms.linklayer.LinkLayer;
 import yadi.dlms.linklayer.LinkLayerException;
 import yadi.dlms.phylayer.PhyLayer;
@@ -123,5 +124,19 @@ public class DlmsClient {
 		do {
 			link.send(phy, cosem.requestAction(obj));
 		} while (!cosem.parseActionResponse(obj, link.read(phy)));
+	}
+
+	public LinkLayer getLinkLayer() {
+		return link;
+	}
+
+	public void read(PhyLayer phy, SnDescriptor desc) throws PhyLayerException, LinkLayerException, DlmsException {
+		link.send(phy, cosem.readRequest(desc));
+		cosem.parseReadResponse(desc, link.read(phy));
+	}
+
+	public void write(PhyLayer phy, SnDescriptor desc) throws PhyLayerException, LinkLayerException, DlmsException {
+		link.send(phy, cosem.writeRequest(desc));
+		cosem.parseWriteResponse(desc, link.read(phy));
 	}
 }

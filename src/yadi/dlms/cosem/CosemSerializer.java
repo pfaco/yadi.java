@@ -69,6 +69,13 @@ public class CosemSerializer {
 		return this;
 	}
 	
+	public CosemSerializer bcd(byte[] octets) {
+		os.write(DlmsType.BCD.tag);
+		serializeSize(octets.length);
+		serializeBytes(octets);
+		return this;
+	}
+	
 	public CosemSerializer bitstring(boolean[] value) {
 		os.write(DlmsType.BITSTRING.tag);
 		serializeSize(value.length);
