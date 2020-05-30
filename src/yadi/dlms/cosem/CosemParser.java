@@ -108,8 +108,27 @@ public class CosemParser {
 	}
 	
 	public boolean[] bitstring() {
-		//TODO verify this
-		return new boolean[0];
+		int tag = is.read();
+		if (tag != DlmsType.BITSTRING.tag) {
+			throw new IllegalArgumentException("invalid bitstring tag = "+tag);
+		}
+		
+		int size= parseSize();
+		boolean[] result = new boolean[size];
+		
+		int bit = 0x80;
+		int value = is.read();
+		
+		for (int i = 0; i < size; ++i) {
+			if (bit == 0) {
+				value = is.read();
+				bit = 0x80;
+			}
+			result[i] = (value & bit) == bit;
+			bit >>>= 1;
+		}
+		
+		return result;
 	}
 	
 	public boolean bool() {
