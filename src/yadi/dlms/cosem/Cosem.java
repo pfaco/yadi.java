@@ -255,7 +255,7 @@ public class Cosem {
 			}
 			
 			if (data[0] == Constants.GetResponse.NORMAL) {
-				verifyDataAccessResult(data[2]);
+				verifyDataAccessResult(data[2], data[3]);
 				connection.datablock.lastBlock = true;
 				data = Arrays.copyOfRange(data, 3, data.length);
 			} else if (data[0] == Constants.GetResponse.DATA_BLOCK) {
@@ -298,7 +298,7 @@ public class Cosem {
 		}
 		
 		if (data[0] == Constants.SetResponse.NORMAL) {
-			verifyDataAccessResult(data[2]);
+			verifyDataAccessResult(data[2], data.length <= 3 ? 1 : data[3]);
 			return true;
 		} else if (data[0] == Constants.SetResponse.DATA_BLOCK) {
 			if (data.length < 6) {
@@ -318,7 +318,7 @@ public class Cosem {
 				throw new DlmsException(DlmsExceptionReason.RECEIVED_INVALID_SET_RESPONSE);
 			}
 			connection.datablock.ackBlock(ByteBuffer.allocate(4).put(data,3,4).getInt(0));
-			verifyDataAccessResult(data[2]);
+			verifyDataAccessResult(data[2], data[3]);
 			return true;
 		}
 		throw new DlmsException(DlmsExceptionReason.RECEIVED_INVALID_SET_RESPONSE);
@@ -341,12 +341,12 @@ public class Cosem {
 		return true;
 	}
 	
-	private void verifyDataAccessResult(byte result) throws DlmsException {
+	private void verifyDataAccessResult(byte result, byte error) throws DlmsException {
 		if (result == 0) {
 			return;
 		}
 		for (Constants.AccessResult a : Constants.AccessResult.values()) {
-			if (a.val == result) {
+			if (a.val == error) {
 				throw new DlmsException(DlmsExceptionReason.valueOf(a.toString()));
 			}
 		}
@@ -480,7 +480,7 @@ public class Cosem {
 			throw new DlmsException(DlmsExceptionReason.INVALID_DATA);
 		}
 		
-		verifyDataAccessResult(data[2]);
+		verifyDataAccessResult(data[2], data[3]);
 	}
 
 	public byte[] writeRequest(SnDescriptor desc) throws DlmsException {
@@ -513,7 +513,7 @@ public class Cosem {
 			throw new DlmsException(DlmsExceptionReason.INVALID_DATA);
 		}
 		
-		verifyDataAccessResult(data[2]);
+		verifyDataAccessResult(data[2], data[3]);
 	}
 	
 }

@@ -82,8 +82,8 @@ public class CosemConnection {
 	byte[] proposedContextName = new byte[0];
 	byte[] conformanceBlock = new byte[0];
 	public byte[] serverSysTitle = new byte[0];
-	int maxPduSize;
-	int serverInvocationCounter;
+	int maxPduSize = 255;
+	int serverInvocationCounter = 0;
 	
 	void reset() {
 		challengeServerToClient = new byte[0];
@@ -91,7 +91,7 @@ public class CosemConnection {
 		proposedContextName = new byte[0];
 		conformanceBlock = new byte[0];
 		serverSysTitle = new byte[0];
-		maxPduSize = 0;
+		maxPduSize = 255;
 		serverInvocationCounter = 0;
 		datablock.reset();
 	}

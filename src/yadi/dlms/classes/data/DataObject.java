@@ -38,6 +38,14 @@ public class DataObject {
 		return new CosemParser(desc.getResponseData());
 	}
 	
+	public static CosemParser getAttribute(DlmsClient dlms, PhyLayer phy, int classId, String obis, int att,
+			byte[] selectiveAccess) throws PhyLayerException, DlmsException, LinkLayerException {
+		LnDescriptor desc = new LnDescriptor(classId, new Obis(obis), att);
+		desc.setRequestData(selectiveAccess);
+		dlms.get(phy, desc);
+		return new CosemParser(desc.getResponseData());
+	}
+	
 	public static CosemParser readAttribute(DlmsClient dlms, PhyLayer phy, int shortName) throws PhyLayerException, LinkLayerException, DlmsException {
 		SnDescriptor desc = new SnDescriptor(shortName);
 		dlms.read(phy, desc);

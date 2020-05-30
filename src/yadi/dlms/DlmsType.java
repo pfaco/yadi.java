@@ -42,7 +42,8 @@ public enum DlmsType {
 	UINT8(17,1),
 	UINT16(18,2),
 	UINT32(6,4),
-	UINT64(21,8);
+	UINT64(21,8),
+	OCTET_STRING_12(9,0);
 	
 	public final int tag;
 	final int size;

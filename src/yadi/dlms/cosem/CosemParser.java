@@ -3,6 +3,7 @@ package yadi.dlms.cosem;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
+import yadi.dlms.DlmsException;
 import yadi.dlms.DlmsType;
 import yadi.dlms.classes.clock.ClockStatus;
 import yadi.dlms.classes.clock.CosemDate;
@@ -38,7 +39,7 @@ public class CosemParser {
 		case 0x84:
 			return readU32();
 		default:
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("invalid size = "+size);
 		}
 	}
 	
@@ -180,7 +181,8 @@ public class CosemParser {
 		if (is.read() != DlmsType.INT8.tag || is.available() < 1) {
 			throw new IllegalArgumentException();
 		}
-		return is.read();
+		byte val = (byte)is.read();
+		return (int)val;
 	}
 	
 	public int uint8() {
@@ -311,6 +313,21 @@ public class CosemParser {
 	private long readU64() {
 		return readI64() & 0xFFFFFFFFFFFFFFFFL;
 	}
+	
+	public DlmsType getNextType() throws DlmsException {
+		is.mark(10);
+		DlmsType tag = DlmsType.fromTag(is.read());
+		
+		if (tag == DlmsType.OCTET_STRING) {
+			if (this.parseSize() == 12) {
+				is.reset();
+				return DlmsType.OCTET_STRING_12;
+			}
+		}
+		
+		is.reset();
+		return tag;
+	}
 
 	public byte[] getNextItemRawData() {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -369,6 +386,10 @@ public class CosemParser {
 			//
 		}
 		return os.toByteArray();
+	}
+
+	public boolean hasRemaining() {
+		return is.available() > 0;
 	}
 	
 }
