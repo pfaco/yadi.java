@@ -27,19 +27,23 @@ public class Emode {
 	 * @param com PhyLayer object to be used for data tx/rx
 	 * @throws PhyLayerException
 	 */
-	public static void connect(PhyLayer com) throws PhyLayerException {
-		try {
-			com.sendData("/?!\r\n".getBytes());
-			byte[] rxBuff = com.readData(1000, (a) -> isFrameComplete(a));
-			byte baud = (rxBuff[4] & 0xFF) > 0x35 ? 0x35 : rxBuff[4];
-			com.sendData(new byte[]{0x06, 0x32, baud, 0x32, 0x0D, 0x0A});
-			Thread.sleep(150);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+	public static int proposeBaudRate(PhyLayer phy) throws PhyLayerException {
+		phy.sendData("/?!\r\n".getBytes());
+		byte[] rxBuff = phy.readData(1000, (a) -> isFrameComplete(a));
+		byte baud = (rxBuff[4] & 0xFF) > 0x35 ? 0x35 : rxBuff[4];
+		phy.sendData(new byte[]{0x06, 0x32, baud, 0x32, 0x0D, 0x0A});
+		return baud;
+	}
+	
+	public static void ackNewBaud(PhyLayer phy) throws PhyLayerException {
+		phy.readData(1000, (a) -> isAckReceived(a));
 	}
 
 	public static boolean isFrameComplete(byte[] data) {
 		return data.length >= 15 && data[data.length-2] == 0x0D && data[data.length-1] == 0x0A;
+	}
+	
+	public static boolean isAckReceived(byte[] data) {
+		return data.length >= 6 && data[0] == 0x06;
 	}
 }

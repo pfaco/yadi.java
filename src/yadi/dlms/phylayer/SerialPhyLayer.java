@@ -85,11 +85,6 @@ public final class SerialPhyLayer implements PhyLayer {
 		if (!serialPort.setRTS()) {
 			throw new PhyLayerException(PhyLayerExceptionReason.INTERNAL_ERROR);
 		}
-		try {
-			Thread.sleep(250);	
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 	}
 	
 	/**
@@ -98,8 +93,8 @@ public final class SerialPhyLayer implements PhyLayer {
 	 * @throws PhyLayerException
 	 */
 	public void open(String serialName) throws PhyLayerException {
+		serialPort = SerialPort.getCommPort(serialName);
 		try {
-			serialPort = SerialPort.getCommPort(serialName);
 			if (!serialPort.openPort()) {
 				throw new PhyLayerException(PhyLayerExceptionReason.BUSY_CHANNEL);
 			}
@@ -125,16 +120,7 @@ public final class SerialPhyLayer implements PhyLayer {
 	 * @throws PhyLayerException
 	 */
 	public void config(int baudRate, DataBits dataBits, Parity parity, StopBits stopBits) throws PhyLayerException  {
-		if (!serialPort.setBaudRate(baudRate)) {
-			throw new PhyLayerException(PhyLayerExceptionReason.INTERNAL_ERROR);
-		}
-		if (!serialPort.setNumDataBits(dataBits.dataBits)) {
-			throw new PhyLayerException(PhyLayerExceptionReason.INTERNAL_ERROR);
-		}
-		if (!serialPort.setParity(parity.par)) {
-			throw new PhyLayerException(PhyLayerExceptionReason.INTERNAL_ERROR);
-		}
-		if (!serialPort.setNumStopBits(stopBits.stopBits)) {
+		if (!serialPort.setComPortParameters(baudRate, dataBits.dataBits, stopBits.stopBits, parity.par)) {
 			throw new PhyLayerException(PhyLayerExceptionReason.INTERNAL_ERROR);
 		}
 	}
