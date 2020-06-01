@@ -18,6 +18,9 @@ Dev: [![Build Status](https://travis-ci.org/pfaco/yadi.java.svg?branch=dev)](htt
 
 ## Changelog 
 
+### Version 1.0.10 (2020.Jun)
+Optimized Emode connection
+
 ### Version 1.0.9 (2020.May)
 Added support for short name read and write
 Fixed bugs in WrapperLinkLayer
