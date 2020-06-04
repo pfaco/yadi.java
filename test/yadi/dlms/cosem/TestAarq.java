@@ -6,7 +6,6 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
-import app.HexString;
 import yadi.dlms.DlmsException;
 
 public class TestAarq {
