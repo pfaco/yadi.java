@@ -18,6 +18,9 @@ Dev: [![Build Status](https://travis-ci.org/pfaco/yadi.java.svg?branch=dev)](htt
 
 ## Changelog 
 
+### Version 1.0.11 (2020.Jun)
+Java version 1.8
+
 ### Version 1.0.10 (2020.Jun)
 Optimized Emode connection
 
