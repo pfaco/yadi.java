@@ -372,28 +372,30 @@ public class Cosem {
 	
 	private byte[] unpackFrame(int cmdNoCipher, int cmdGlobalCipher, byte[] data) throws DlmsException {
 		if ( (data[0] & 0xFF) == Constants.xDlmsApdu.Exception.ExceptionResponse) {
-			DlmsExceptionReason[] reasons = new DlmsExceptionReason[2];
-			reasons[0] = DlmsExceptionReason.STATE_ERROR_UNKNOWN;
-			reasons[1] = DlmsExceptionReason.SERVICE_ERROR_UNKNOWN;
+
+			int errorType = data[1] & 0xFF;
+			int errorCode = data[2] & 0xFF;
 			
-			if (data[1] == 1) {
-				reasons[0] = DlmsExceptionReason.STATE_ERROR_SERVICE_NOT_ALLOWED;
+			if (errorType == 0) {
+				switch (errorCode) {
+				case 1: throw new DlmsException(DlmsExceptionReason.STATE_ERROR_SERVICE_NOT_ALLOWED);
+				case 2: throw new DlmsException(DlmsExceptionReason.STATE_ERROR_SERVICE_UNKNOWN);
+				default: throw new DlmsException(DlmsExceptionReason.STATE_ERROR_UNKNOWN);
+				}
 			}
-			else if (data[1] == 2) {
-				reasons[0] = DlmsExceptionReason.STATE_ERROR_SERVICE_UNKNOWN;
+			else if (errorType == 1) {
+				switch (errorCode) {
+				case 1: throw new DlmsException(DlmsExceptionReason.SERVICE_ERROR_OPERATION_NOT_POSSIBLE);
+				case 2: throw new DlmsException(DlmsExceptionReason.SERVICE_ERROR_NOT_SUPPORTED);
+				case 3: throw new DlmsException(DlmsExceptionReason.SERVICE_ERROR_OTHER_REASON);
+				case 4: throw new DlmsException(DlmsExceptionReason.SERVICE_ERROR_PDU_TOO_LONG);
+				case 5: throw new DlmsException(DlmsExceptionReason.SERVICE_ERROR_DECIPHERING_ERROR);
+				case 6: throw new DlmsException(DlmsExceptionReason.SERVICE_ERROR_INVOCATION_COUNTER_ERROR);
+				default: throw new DlmsException(DlmsExceptionReason.SERVICE_ERROR_UNKNOWN);
+				}
 			}
 			
-			if (data[2] == 1) {
-				reasons[1] = DlmsExceptionReason.SERVICE_ERROR_OPERATION_NOT_POSSIBLE;
-			}
-			else if (data[2] == 2) {
-				reasons[1] = DlmsExceptionReason.SERVICE_ERROR_NOT_SUPPORTED;
-			}
-			else if (data[2] == 3) {
-				reasons[1] = DlmsExceptionReason.SERVICE_ERROR_OTHER_REASON;
-			}
-			
-			throw new DlmsException(reasons);
+			throw new DlmsException(DlmsExceptionReason.SERVICE_ERROR_UNKNOWN);
 		}
 		if (params.securityType != SecurityType.NONE) {
 			if ( (data[0] & 0xff) != cmdGlobalCipher) {
