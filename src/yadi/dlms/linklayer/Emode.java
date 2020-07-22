@@ -32,6 +32,17 @@ public class Emode {
 		byte[] rxBuff = phy.readData(1000, (a) -> isFrameComplete(a));
 		byte baud = (rxBuff[4] & 0xFF) > 0x35 ? 0x35 : rxBuff[4];
 		phy.sendData(new byte[]{0x06, 0x32, baud, 0x32, 0x0D, 0x0A});
+		try {
+			/* Wait for the transmission of the last command
+			 * It should take (6*8)/300 = 160ms
+			 * This is necessary because some serial port adapters
+			 * Will cancel the current transmission if you try to
+			 * Change the serial port configuration.
+			 */
+			Thread.sleep(180);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		return baud;
 	}
 	
@@ -44,6 +55,6 @@ public class Emode {
 	}
 	
 	public static boolean isAckReceived(byte[] data) {
-		return data.length >= 6 && data[0] == 0x06;
+		return data.length >= 6 && (data[0] == 0x06 || data[1] == 0x06);
 	}
 }
