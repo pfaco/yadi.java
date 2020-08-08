@@ -334,6 +334,7 @@ public class Cosem {
 		data = unpackFrame(Constants.xDlmsApdu.NoCiphering.ACTION_RESPONSE,
                            Constants.xDlmsApdu.GlobalCiphering.ACTION_RESPONSE, data);
 		
+		verifyActionAccessResult(data[2]);
 		if (data.length > 6) {
 			att.setResponseData(Arrays.copyOfRange(data, 5, data.length));
 		}
@@ -347,6 +348,18 @@ public class Cosem {
 		}
 		for (Constants.AccessResult a : Constants.AccessResult.values()) {
 			if (a.val == error) {
+				throw new DlmsException(DlmsExceptionReason.valueOf(a.toString()));
+			}
+		}
+		throw new DlmsException(DlmsExceptionReason.UNKNOWN_ACCESS_RESULT_FAILURE);
+	}
+	
+	private void verifyActionAccessResult(byte result) throws DlmsException {
+		if (result == 0) {
+			return;
+		}
+		for (Constants.ActionAccessResult a : Constants.ActionAccessResult.values()) {
+			if (a.val == result) {
 				throw new DlmsException(DlmsExceptionReason.valueOf(a.toString()));
 			}
 		}

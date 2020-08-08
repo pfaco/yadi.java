@@ -79,18 +79,15 @@ public class CosemSerializer {
 	public CosemSerializer bitstring(boolean[] value) {
 		os.write(DlmsType.BITSTRING.tag);
 		serializeSize(value.length);
-		int byteSize = (value.length / 8);
-		if (byteSize == 0) {
-			byteSize = ((value.length % 8) == 0) ? 0 : 1;
-		}
+		int byteSize = (int) Math.ceil((double)value.length / 8);
 		byte[] byteValue = new byte[byteSize];
 		int nextByte = 0;
-		int nextBit = 1;
+		int nextBit = 0x80;
 		for (int i = 0; i < value.length; ++i) {
 			byteValue[nextByte] |= value[i] ? nextBit : 0;
-			nextBit <<= 1;
-			if (nextBit > 0x80) {
-				nextBit = 1;
+			nextBit >>>= 1;
+			if (nextBit == 0) {
+				nextBit = 0x80;
 				++nextByte;
 			}
 		}
@@ -249,6 +246,16 @@ public class CosemSerializer {
 
 	public CosemSerializer rawByte(int value) {
 		os.write(value);
+		return this;
+	}
+	
+
+	public CosemSerializer rawBuffer(byte[] content) {
+		try {
+			os.write(content);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		return this;
 	}
 
