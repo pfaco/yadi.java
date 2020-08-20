@@ -312,9 +312,9 @@ public class HdlcLinkLayer implements LinkLayer {
 	}
 	
 	private void initFrame(int control, int size) {
-		if (size < 128 || size < connection.maxInformationFieldTx) {
+		//if (size < 128 || size < connection.maxInformationFieldTx) {
 			control |= 0x10; //final bit
-		}
+		//}
 		stream.reset();
 		stream.write(HDLC_FLAG);
 		stream.write(HDLC_FORMAT);
